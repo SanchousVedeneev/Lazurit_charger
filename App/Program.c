@@ -5,16 +5,7 @@
 #include "ProtocolMbRtuSlaveCtrl.h"
 #include "FlashWorker.h"
 
-//------------  Главная структура   ------------//
 Program_typedef programStruct;
-//------------  Главная структура Конец  ------------//
-
-#define LOW_CHARGE_SOC (10.0f) //%
-#define HIGH_CHARGE_SOC (90.0f)
-
-// Выбор параметра по которому определяем сигнал аварийный "высокий/низкий заряд батареи"
-#define CONROL_CHARGE_BAT_OF_U
-//#define CONROL_CHARGE_BAT_OF_SOC
 
 /*----------------------------- PRIVATE FCN MACRO DCL ---------------------------------*/
 __STATIC_INLINE uint8_t Program_analogInit();
@@ -29,7 +20,6 @@ __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error);
 
 #define SET_PWM_STEP_UP(IDX,VALUE_1000) bsp_pwm_set_ccrPercentX10((IDX), 1000.0f - (VALUE_1000))
 #define SET_PWM_STEP_DOWN(IDX,VALUE_1000) bsp_pwm_set_ccrPercentX10((IDX), (VALUE_1000))
-
 /*----------------------------- PRIVATE FCN MACRO END ---------------------------------*/
 
 // --------------------- EXTERN ---------------------//
@@ -37,9 +27,6 @@ extern bsp_analogIn_typedef bsp_analogIn_struct;
 // --------------------- EXTERN END---------------------//
 
 /*----------------------------- STEPS ---------------------------------*/
-/*----------------------------- STEPS ---------------------------------*/
-/*----------------------------- STEPS ---------------------------------*/
-
 #define PRG_LED_FAULT_BLINK_PERIOD (200)
 __STATIC_INLINE void __stepWaitInit()
 {
@@ -56,7 +43,6 @@ __STATIC_INLINE void __stepWaitInit()
     }
 //---------------- переключатель конец
 }
-
 __STATIC_INLINE void __stepInit()
 {
 static uint8_t ledCounter = 1;
@@ -179,10 +165,6 @@ __STATIC_INLINE void __stepWaitOp()
 //---------------- переключатель конец
 
 }
-
-    
-/*----------------------------- STEPS END ---------------------------------*/
-/*----------------------------- STEPS END ---------------------------------*/
 /*----------------------------- STEPS END ---------------------------------*/
 
 //------------  ФУНКЦИИ   ------------//
