@@ -218,38 +218,26 @@ void Program_ParamSetToDefault()
         programStruct.setupParam.analog_filter_N[i] = 260; // 1 - Фильтр отключен
     }
 
-    programStruct.setupParam.analog_kMul[prg_analog_vodorod_i_SUI1] = -0.00677443435f;
-        programStruct.setupParam.analog_shift[prg_analog_vodorod_i_SUI1] = 1867.0f;
+    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  =  1.0f;                 // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_Uzpt] = 1.0f;                  // вписать после калбировки датчиков
 
-    programStruct.setupParam.analog_kMul[prg_analog_vodorod_i_SUI2] = -0.00685132481f; 
-        programStruct.setupParam.analog_shift[prg_analog_vodorod_i_SUI2] = 1896.0f; 
+    programStruct.setupParam.analog_kMul[prg_analog_Uout_power_block]  = 1.0f;      // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_Uout_power_block] = 1.0f;      // вписать после калбировки датчиков 
 
-    programStruct.setupParam.analog_kMul[prg_analog_vodorod_i_SUI3] = -0.00705469819f; 
-        programStruct.setupParam.analog_shift[prg_analog_vodorod_i_SUI3] = 1911.0f; 
+    programStruct.setupParam.analog_kMul[prg_analog_Uout] = 1.0f;                   // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_Uout] = 1.0f;                  // вписать после калбировки датчиков
 
-    programStruct.setupParam.analog_kMul[prg_analog_vodorod_u_in] = 0.034120895f;   //?
-        programStruct.setupParam.analog_shift[prg_analog_vodorod_u_in] = 1969.0f;   //?
+    programStruct.setupParam.analog_kMul[prg_analog_I_L3] = 1.0f;                   // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_I_L3] = 1.0f;                  // вписать после калбировки датчиков
 
-    programStruct.setupParam.analog_kMul[prg_analog_vodorod_u_SUO] = 0.0340340497f;  
-        programStruct.setupParam.analog_shift[prg_analog_vodorod_u_SUO] = 2051.0f;  
+    programStruct.setupParam.analog_kMul[prg_analog_I_L4] = 1.0f;                   // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_I_L4] = 1.0f;                  // вписать после калбировки датчиков 
 
-    programStruct.setupParam.analog_kMul[prg_analog_bat_i] = -0.00685132481f;          //?
-        programStruct.setupParam.analog_shift[prg_analog_bat_i] = 1900.0f;          //?
+    programStruct.setupParam.analog_kMul[prg_analog_Iout1] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_Iout1] = 1.0f;                 // вписать после калбировки датчиков          
 
-    programStruct.setupParam.analog_kMul[prg_analog_out_i] = 0.00665253727f;          //?
-        programStruct.setupParam.analog_shift[prg_analog_out_i] = 1900.0f;          //?
-
-    programStruct.setupParam.analog_kMul[prg_analog_out_u] = 0.0341274887f;          //?
-        programStruct.setupParam.analog_shift[prg_analog_out_u] = 2063.0f;          //?
-
-    programStruct.setupParam.analog_kMul[prg_analog_zu_i_CHO] = -0.00685132481f;   // ток вытекает из модуля, поэтому + 
-        programStruct.setupParam.analog_shift[prg_analog_zu_i_CHO] = 1900.0f;       
-
-    programStruct.setupParam.analog_kMul[prg_analog_zu_u_CH] = 0.0339168422f;        //?
-        programStruct.setupParam.analog_shift[prg_analog_zu_u_CH] = 2085.0f;        //?
-
-    programStruct.setupParam.analog_kMul[prg_analog_zu_u_CHO] = 0.0339128003f;       //?
-        programStruct.setupParam.analog_shift[prg_analog_zu_u_CHO] = 2137.0f;       //?
+    programStruct.setupParam.analog_kMul[prg_analog_Iout2] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_shift[prg_analog_Iout2] = 1.0f;                 // вписать после калбировки датчиков
 }
 
 #define PROGRAM_PARAM_SIZE_BYTE sizeof(Program_PARAM_typedef)
@@ -367,7 +355,7 @@ __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error)
     if (error == error_noError)
         return 0;
 
-    if (programStruct.setupParam.protect_control & (uint64_t)(1 << (error - 1)))
+    if (programStruct.setupParam.protect_control & (uint32_t)(1 << (error - 1)))
     {
         return 0;
     }
@@ -384,9 +372,11 @@ __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 //------------  ФУНКЦИИ КОНЕЦ ------------//
 
 //------------   Задача 1 кГц   ------------//
+#define PRG_UPDATE_MDB (100)
 void bsp_sys_tick_1k_callback()
 {
     // static uint16_t count_1k_mdb = 0;
+    static uint16_t timer_mdb = 0;
 
     // Проверка нажатия Аварийного стопа
     // В отладочном режиме аварийный стоп не работает!
@@ -399,16 +389,13 @@ void bsp_sys_tick_1k_callback()
     //     }
     // }
 
-    // Пуск водорода от кнопки Start, только из target_waitOp и step_wait_op 
-    if ((Program_checkDin(prg_din1_PUSK) == PRG_DIN_PUSK_VAL) &&
-        (programStruct.control.target == target_waitOp) && 
-        (programStruct.control.step == step_wait_op))
-    {
-       // Program_switchTarget(target_vodorodWork);
-    }
 
-    // обновить состояние буферов Modbus Slave
-    protocolMbRtuSlaveCtrl_update_tables();
+    if (timer_mdb++ > PRG_UPDATE_MDB)
+    {
+        protocolMbRtuSlaveCtrl_update_tables();
+        timer_mdb = 0;
+    }
+    
     
     // // Формируем и сбрасываем ошибку связи Modbus с панелью (возможно стоит переделать)
     // if(programStruct.PanParam.mdb_rx == PAN_MDB_STATE_ERR)
@@ -464,9 +451,9 @@ __STATIC_INLINE void Program_pwmOutsControl(bsp_pwm_outs_group_typedef group, ui
 
     if (group == bsp_pwm_outs_group_123)
     {
-        bsp_pwm_enable_out_VT_CONCEPT(0, bsp_pwm_outs_type_low);
-        bsp_pwm_enable_out_VT_CONCEPT(1, bsp_pwm_outs_type_low);
-        bsp_pwm_enable_out_VT_CONCEPT(2, bsp_pwm_outs_type_low);
+        bsp_pwm_enable_out_VT_CONCEPT(0, bsp_pwm_outs_type_all);
+        bsp_pwm_enable_out_VT_CONCEPT(1, bsp_pwm_outs_type_high);
+        bsp_pwm_enable_out_VT_CONCEPT(2, bsp_pwm_outs_type_high);
     }
     else
     {
@@ -661,18 +648,13 @@ __STATIC_INLINE uint8_t Program_analogInit(){
         programStruct.analog.aIn[i].shift = programStruct.setupParam.analog_shift[i];
     }
 
-    programStruct.analog.aIn[prg_analog_vodorod_i_SUI1].bspIdx = 0;
-    programStruct.analog.aIn[prg_analog_vodorod_u_SUO].bspIdx = 1;
-    programStruct.analog.aIn[prg_analog_vodorod_i_SUI2].bspIdx = 2;
-    programStruct.analog.aIn[prg_analog_vodorod_u_in].bspIdx = 3;
-    programStruct.analog.aIn[prg_analog_vodorod_i_SUI3].bspIdx = 4;
-    programStruct.analog.aIn[prg_analog_out_u].bspIdx = 5;
-    programStruct.analog.aIn[prg_analog_bat_i].bspIdx = 6;
-    programStruct.analog.aIn[prg_analog_zu_u_CHO].bspIdx = 7;
-    programStruct.analog.aIn[prg_analog_out_i].bspIdx = 8;
-    programStruct.analog.aIn[prg_analog_zu_i_CHO].bspIdx = 9;
-    programStruct.analog.aIn[prg_analog_zu_u_CH].bspIdx = 10;
-
+    programStruct.analog.aIn[prg_analog_Uzpt].bspIdx = 0;
+    programStruct.analog.aIn[prg_analog_Uout_power_block].bspIdx = 1;
+    programStruct.analog.aIn[prg_analog_Uout].bspIdx = 2;
+    programStruct.analog.aIn[prg_analog_I_L3].bspIdx = 3;
+    programStruct.analog.aIn[prg_analog_I_L4].bspIdx = 4;
+    programStruct.analog.aIn[prg_analog_Iout1].bspIdx = 5;
+    programStruct.analog.aIn[prg_analog_Iout2].bspIdx = 6;
     bsp_analogIn_start();
 
     return 1;
@@ -681,37 +663,48 @@ __STATIC_INLINE uint8_t Program_analogInit(){
 void bsp_analogIn_ready_callback(){
 
     uint8_t count = PRG_ANALOG_COUNT;
+    uint8_t bspIdx = 0;
     float value = 0.0f;
     float valueLast = 0.0f;
     float kFilter = 0.0f;
+    float data = 0.0f;
+    float sum = 0.0f;
 
     asm("NOP");
 
         for (uint8_t ch = 0; ch < count; ch++)
         {
-            if(programStruct.analog.aIn[ch].bspIdx == -1 ) continue;
-
-            uint8_t bspIdx = programStruct.analog.aIn[ch].bspIdx;
-            float data = bsp_analogIn_struct.rawDataUI[bspIdx];
+            if (programStruct.analog.aIn[ch].bspIdx == -1 ) 
+            {
+                continue;
+            }
+            bspIdx = programStruct.analog.aIn[ch].bspIdx;
+            data = bsp_analogIn_struct.rawDataUI[bspIdx];
 
             programStruct.analog.aIn[ch].buf[programStruct.analog.aIn[ch].bufIdx++] = data;
-            if(programStruct.analog.aIn[ch].bufIdx == programStruct.analog.aIn[ch].order) programStruct.analog.aIn[ch].bufIdx = 0;
 
-            float sum = 0.0f;
+            if (programStruct.analog.aIn[ch].bufIdx == programStruct.analog.aIn[ch].order)
+            {
+                programStruct.analog.aIn[ch].bufIdx = 0;
+            }
+
+            sum = 0.0f;
             for (uint8_t idx = 0; idx < programStruct.analog.aIn[ch].order; idx++)
             {
                 sum += programStruct.analog.aIn[ch].buf[idx];
             }
+
             programStruct.analog.aIn[ch].valueRaw = (sum/programStruct.analog.aIn[ch].order);
-            value = ( programStruct.analog.aIn[ch].valueRaw  - programStruct.analog.aIn[ch].shift )*\
-                                                 programStruct.analog.aIn[ch].kMul;
+            value = ( programStruct.analog.aIn[ch].valueRaw  - programStruct.analog.aIn[ch].shift )*programStruct.analog.aIn[ch].kMul;
             valueLast = programStruct.analog.aIn[ch].valueLast;
+
             // Формула: Yavg(i) = Yavg(i-1) + a * ( X(i) - Yavg(i-1) );
             // a = 2/(N + 1) -> Коэффициент фильтра;
             // N -> количество точек для усреднения, N >= 1;
             // N = 1 -> фильтр отключен;
             kFilter = 2.0f/((float)programStruct.analog.aIn[ch].analogFilterN + 1.0f);
             value = valueLast + kFilter*(value - valueLast);
+
             programStruct.analog.aIn[ch].value = value;
             programStruct.analog.aIn[ch].valueLast = value;
         }

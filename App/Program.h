@@ -32,16 +32,16 @@ typedef enum{
 
 typedef enum
 {
-	prg_din1_PUSK,       // 0
-	prg_din2_STOP,       // 1
-	prg_din3_ALARM_STOP, // 2
-	prg_din4_KT1,        // 3
-	prg_din5_KT2,        // 4
-	prg_din6_KT3,        // 5
-	prg_din7_KT4,        // 6
-	prg_din8_UNUSED,     // 7
-	prg_din9_UKI,        // 8
-	prg_din10_UNUSED     // 9
+	prg_din1_UNUSED,       // 0
+	prg_din2_UNUSED,       // 1
+	prg_din3_UNUSED,       // 2
+	prg_din4_UNUSED,       // 3
+	prg_din5_UNUSED,       // 4
+	prg_din6_UNUSED,       // 5
+	prg_din7_UNUSED,       // 6
+	prg_din8_UNUSED,       // 7
+	prg_din9_UNUSED,       // 8
+	prg_din10_UNUSED       // 9
 } Program_din_typedef;
 
 #define PRG_DIN_PUSK_VAL (1)
@@ -51,16 +51,16 @@ typedef enum
 
 typedef enum
 {
-	prg_dout1_KM3_KM5_K5, // 0
-	prg_dout2_KM4,        // 1
-	prg_dout3_KM1,        // 2
-	prg_dout4_KM2,        // 3
-	prg_dout5_KM7,        // 4
-	prg_dout6_KM9,        // 5
-	prg_dout7_KM8_K8,     // 6
-	prg_dout8_K2,         // 7
-	prg_dout9_LED_WORK,   // 8
-	prg_dout10_KM6        // 9
+	prg_dout1_KM1_KM2,    // 0
+	prg_dout2_KM3,        // 1
+	prg_dout3_KM4,        // 2
+	prg_dout4_fan_power,  // 3
+	prg_dout5_fan_cap,    // 4
+	prg_dout6_fan_L,      // 5
+	prg_dout7,            // 6
+	prg_dout8,            // 7
+	prg_dout9,            // 8
+	prg_dout10            // 9
 } Program_dout_typedef;
 
 typedef struct
@@ -113,20 +113,16 @@ typedef struct
 }Program_AIN_typedef;
 
 typedef enum{
-    prg_analog_vodorod_i_SUI1,
-    prg_analog_vodorod_u_SUO,
-    prg_analog_vodorod_i_SUI2,
-    prg_analog_vodorod_u_in,
-    prg_analog_vodorod_i_SUI3,
-    prg_analog_out_u,
-    prg_analog_bat_i,
-    prg_analog_zu_u_CHO,
-    prg_analog_out_i,
-    prg_analog_zu_i_CHO,
-    prg_analog_zu_u_CH
+    prg_analog_Uzpt,
+    prg_analog_Uout_power_block,
+    prg_analog_Uout,
+    prg_analog_I_L3,
+    prg_analog_I_L4,
+    prg_analog_Iout1,
+    prg_analog_Iout2
 }Program_ANALOG_ENUM_typedef;
 
-#define PRG_ANALOG_COUNT (prg_analog_zu_u_CH + 1)
+#define PRG_ANALOG_COUNT (prg_analog_Iout2 + 1)
 
 typedef struct
 {
@@ -159,7 +155,7 @@ typedef struct
     uint8_t analog_av_order[PRG_ANALOG_COUNT];  //+
     uint16_t analog_filter_N[PRG_ANALOG_COUNT]; //+
 
-    uint64_t protect_control; // по умолчанию =0
+    uint32_t protect_control; // по умолчанию =0
 }Program_PARAM_typedef;
 
 

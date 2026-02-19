@@ -396,13 +396,13 @@ void BSP_ANALOG_IRQ_HANDLER()
     bsp_analogIn_struct.rawDataUI[i] = LL_ADC_INJ_ReadConversionData32(adcStruct[i].adc, adcStruct[i].channel) - shift;
   }
 
-  static uint16_t temp_cnt = 0;
+  static uint32_t temp_cnt = 0;
 
   bsp_analogIn_struct.rawDataTemp[0] = LL_ADC_INJ_ReadConversionData32(adcStruct[12].adc, adcStruct[12].channel);
   bsp_analogIn_struct.rawDataTemp[1] = LL_ADC_INJ_ReadConversionData32(adcStruct[13].adc, adcStruct[13].channel);
   bsp_analogIn_struct.rawDataCpuTemp = LL_ADC_INJ_ReadConversionData32(adcStruct[14].adc, adcStruct[14].channel);
 
-  if (((temp_cnt++) % BSP_ANALOG_TIM_FREQ) == 0)
+  if (((temp_cnt++) % (BSP_ANALOG_TIM_FREQ*5)) == 0)
   {
     bsp_analogIn_struct.currentTemp[0] = bsp_analogIn_getTemp(1);
     bsp_analogIn_struct.currentTemp[1] = bsp_analogIn_getTemp(2);

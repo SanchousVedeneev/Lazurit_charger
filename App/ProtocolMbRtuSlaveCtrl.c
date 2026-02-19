@@ -10,17 +10,20 @@ uint8_t modbusBufRxTxRtu485[MODBUS_SS_BUF_CNT];
 #define MDB_TABLE_BSP_REG_NO (1000)
 enum mdb_table_bsp
 {
-  tab_bsp_din = MDB_TABLE_BSP_REG_NO,
-  tab_bsp_dout_led_w1,
-  tab_bsp_dout_led_w2,
-  tab_bsp_dout,
-  tab_bsp_analog = MDB_TABLE_BSP_REG_NO + 5, // ..1016
-  tab_bsp_temp = MDB_TABLE_BSP_REG_NO + 17  // ..1018
+  tab_bsp_din = MDB_TABLE_BSP_REG_NO,        // 1000
+  tab_bsp_dout_led_w1,                       // 1001
+  tab_bsp_dout_led_w2,                       // 1002
+  tab_bsp_dout,                              // 1003
+  tab_bsp_rezerv,                            // 1004
+  tab_bsp_analog,                            // 1005 ... 1016
+  tab_bsp_temp_1 = tab_bsp_analog + 11 + 1,  // 1017
+  tab_bsp_temp_2                             // 1018
 };
-uint16_t mdb_bsp_buf[60];
+#define MDB_BSP_BUF_COUNT (tab_bsp_temp_2 - MDB_TABLE_BSP_REG_NO + 1)
+uint16_t mdb_bsp_buf[MDB_BSP_BUF_COUNT];
 ModbusSS_table_t mdb_table_bsp = {
     .buf = (uint8_t *)mdb_bsp_buf,
-    .quantity = 60,
+    .quantity = MDB_BSP_BUF_COUNT,
     .regNo = MDB_TABLE_BSP_REG_NO,
     .type = ModbusSS_Holding};
 
@@ -28,27 +31,22 @@ ModbusSS_table_t mdb_table_bsp = {
 #define MDB_TABLE_PROGRAM_REG_NO (1200)
 enum mdb_table_program
 {
-  tab_prg_cmd = MDB_TABLE_PROGRAM_REG_NO,
-  tab_prg_param,
-  tab_prg_step,
-  tab_prg_target,
-  tab_prg_ecode,
-  tab_prg_flashCounter,
-  tab_prg_analogVal_vodorod_i_SUI1,
-  tab_prg_analogVal_vodorod_u_SUO,
-  tab_prg_analogVal_vodorod_i_SUI2,
-  tab_prg_analogVal_vodorod_u_in,
-  tab_prg_analogVal_vodorod_i_SUI3,
-  tab_prg_analogVal_out_u,
-  tab_prg_analogVal_bat_i,
-  tab_prg_analogVal_zu_u_CHO,
-  tab_prg_analogVal_out_i,
-  tab_prg_analogVal_zu_i_CHO,
-  tab_prg_analogVal_zu_u_CH,
-  tab_prg_pwm1, // ... 1222
-  tab_prg_vodorod_iIn = 1223
+  tab_prg_cmd = MDB_TABLE_PROGRAM_REG_NO,   // 1200
+  tab_prg_param,                            // 1201
+  tab_prg_step,                             // 1202
+  tab_prg_target,                           // 1203
+  tab_prg_ecode,                            // 1204
+  tab_prg_flashCounter,                     // 1205
+  tab_prg_analogVal_Uzpt,                   // 1206
+  tab_prg_analogVal_Uout_power_block,       // 1207
+  tab_prg_analogVal_Uout,                   // 1208
+  tab_prg_analogVal_I_L3,                   // 1209
+  tab_prg_analogVal_I_L4,                   // 1210
+  tab_prg_analogVal_Iout1,                  // 1211
+  tab_prg_analogVal_Iout2,                  // 1212
+  tab_prg_pwm1_6,                           // 1213 ... 1218
 };
-#define MDB_PROGRAM_BUF_COUNT (tab_prg_vodorod_iIn - MDB_TABLE_PROGRAM_REG_NO + 1)
+#define MDB_PROGRAM_BUF_COUNT ((tab_prg_pwm1_6+5) - MDB_TABLE_PROGRAM_REG_NO + 1)
 uint16_t mdb_program_buf[MDB_PROGRAM_BUF_COUNT];
 ModbusSS_table_t mdb_table_program = {
     .buf = (uint8_t *)mdb_program_buf,
@@ -59,15 +57,14 @@ ModbusSS_table_t mdb_table_program = {
     #define MDB_TABLE_PARAM_REG_NO (1400)
 enum mdb_table_param
 {
-  tab_param_analog_shift_1_11 = MDB_TABLE_PARAM_REG_NO, //1400 ... 1410
-  tab_param_analog_kMul_1_11 = tab_param_analog_shift_1_11 + PRG_ANALOG_COUNT, // 1411 ... 1421
-  tab_param_analog_av_order_1_11 = tab_param_analog_kMul_1_11 + PRG_ANALOG_COUNT, // 1422 ... 1432
-  tab_param_analog_filter_N_1_11 = tab_param_analog_av_order_1_11 + PRG_ANALOG_COUNT, //1433 ... 1443
+  tab_param_analog_shift_1_7    = MDB_TABLE_PARAM_REG_NO,                           // 1400 ... 1406
+  tab_param_analog_kMul_1_7     = tab_param_analog_shift_1_7 + PRG_ANALOG_COUNT,    // 1407 ... 1413
+  tab_param_analog_av_order_1_7 = tab_param_analog_kMul_1_7 + PRG_ANALOG_COUNT,     // 1414 ... 1420
+  tab_param_analog_filter_N_1_7 = tab_param_analog_av_order_1_7 + PRG_ANALOG_COUNT, // 1421 ... 1427
 
-  tab_param_protect_control_B_1 =  tab_param_analog_filter_N_1_11 + PRG_ANALOG_COUNT, //1444 ... ,
-  tab_param_protect_control_B_2, //1445
+  tab_param_protect_control     =  tab_param_analog_filter_N_1_7 + PRG_ANALOG_COUNT, // 1428
 };
-#define MDB_PARAM_BUF_COUNT (tab_param_protect_control_B_2 - tab_param_analog_shift_1_11 + 1)
+#define MDB_PARAM_BUF_COUNT (tab_param_protect_control - tab_param_analog_shift_1_7 + 1)
 uint16_t mdb_param_buf[MDB_PARAM_BUF_COUNT];
 ModbusSS_table_t mdb_table_param = {
     .buf = (uint8_t *)mdb_param_buf,
@@ -116,71 +113,71 @@ void protocolMbRtuSlaveCtrl_init(uint8_t portNo)
 __INLINE void protocolMbRtuSlaveCtrl_update_tables()
 {
   // BSP -----------------------------//
-  uint16_t regNo = MDB_TABLE_BSP_REG_NO;
-  ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_dInOut_struct.in.w16); // 1000
-  for (uint8_t i = 0; i < 3; i++)
-  {
-    ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_dInOut_struct.out.w16[i]); // 1001 - 1003
-  }
+  uint16_t regNo = 0;
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_din, bsp_dInOut_struct.in.w16);                // 1000
 
-  regNo = MDB_TABLE_BSP_REG_NO + 5; // 1005
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout_led_w1, bsp_dInOut_struct.out.w16[0]);    // 1001
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout_led_w2, bsp_dInOut_struct.out.w16[1]);    // 1001
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout,        bsp_dInOut_struct.out.w16[2]);    // 1002
+
+  regNo = tab_bsp_analog;
   for (uint8_t i = 0; i < 12; i++)
   {
-    ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.rawDataUI[i]); // 1005 - 1016
+    ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.rawDataUI[i]);          // 1005 - 1016
   }
-  // ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_getTemp(1)); // 1017
-  // ModbusSS_SetWord(&mdb_table_bsp, regNo, bsp_analogIn_getTemp(2));   // 1018
-  ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.currentTemp[0]); // 1017
-  ModbusSS_SetWord(&mdb_table_bsp, regNo,   bsp_analogIn_struct.currentTemp[1]); // 1018
+
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_getTemp(1));              // 1017
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_getTemp(2));              // 1018
+  // ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.currentTemp[0]);       // 1017
+  // ModbusSS_SetWord(&mdb_table_bsp, regNo,   bsp_analogIn_struct.currentTemp[1]);       // 1018
   // BSP END-----------------------------//
 
   // PROGRAM -----------------------------//
   // ModbusSS_SetWord(&mdb_table_program, tab_prg_cmd, modbusRtu_ctrlStruct.cmd);      // 1200
   // ModbusSS_SetWord(&mdb_table_program, tab_prg_param, modbusRtu_ctrlStruct.param);    // 1201
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_target, programStruct.control.target);   // 1202
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_step, programStruct.control.step);       // 1203
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_ecode, programStruct.control.errorCode); // 1204
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_target, programStruct.control.target);     // 1202
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_step, programStruct.control.step);         // 1203
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_ecode, programStruct.control.errorCode);   // 1204
   ModbusSS_SetWord(&mdb_table_program, tab_prg_flashCounter, programStruct.sys.flash_counter); // 1205
   
-  uint16_t analogStartIdx = tab_prg_analogVal_vodorod_i_SUI1;
-  uint16_t analogStopIdx = tab_prg_analogVal_zu_u_CH;
+  uint16_t analogStartIdx = tab_prg_analogVal_Uzpt;
+  uint16_t analogStopIdx = tab_prg_analogVal_Iout2;
   int16_t val = 0.0f;
 
   for (uint8_t i = 0; i < (analogStopIdx - analogStartIdx + 1); i++)
   {
-      val = Program_analogGetByIdx(i)->value;
-      ModbusSS_SetWord(&mdb_table_program, analogStartIdx + i, val); // 1206
+    val = Program_analogGetByIdx(i)->value;
+    ModbusSS_SetWord(&mdb_table_program, analogStartIdx + i, val);                      // 1206 ... 1212
   }
   
   for (uint8_t i = 0; i < 6; i++)
   {
-      ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1 + i ,programStruct.control.remote.pwmArray[i]);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1_6 + i ,programStruct.control.remote.pwmArray[i]); // 1213 ... 1218
   }
  
-
     // PARAM -----------------------------//
   //-----Analog param
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_11 + i, Program_analogGetByIdx(i)->shift);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_11 + i, programStruct.setupParam.analog_shift[i]);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_7 + i, Program_analogGetByIdx(i)->shift);
+    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_7 + i, programStruct.setupParam.analog_shift[i]);
   }
   float analog_kMul = 100000.0f;
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_11 + i, Program_analogGetByIdx(i)->kMul * kMul);
     val = (programStruct.setupParam.analog_kMul[i] * analog_kMul);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_11 + i, val);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, Program_analogGetByIdx(i)->kMul * analog_kMul);
+    // ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, val);
   }
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_11 + i, Program_analogGetByIdx(i)->order);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_11 + i, programStruct.setupParam.analog_av_order[i]);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_7 + i, Program_analogGetByIdx(i)->order);
+    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_7 + i, programStruct.setupParam.analog_av_order[i]);
   }
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_11 + i, Program_analogGetByIdx(i)->analogFilterN);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_11 + i, programStruct.setupParam.analog_filter_N[i]);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_7 + i, Program_analogGetByIdx(i)->analogFilterN);
+    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_7 + i, programStruct.setupParam.analog_filter_N[i]);
   }
 }
 //------------------------ REGULAR FCN END------------------------
@@ -238,8 +235,8 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
         break;
       }
       break;
-    case tab_prg_analogVal_vodorod_i_SUI1 ... tab_prg_analogVal_zu_u_CH:
-      idx = reg - tab_prg_analogVal_vodorod_i_SUI1;
+    case tab_prg_analogVal_Uzpt ... tab_prg_analogVal_Iout2:
+      idx = reg - tab_prg_analogVal_Uzpt;
       float value = ModbusSS_GetWord(&mdb_table_program, reg);
       if (value == 0.0f)
       {
@@ -256,14 +253,14 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
         }
       }
       break;
-    case tab_prg_pwm1:
-    case tab_prg_pwm1 + 1:
-    case tab_prg_pwm1 + 2:
-    case tab_prg_pwm1 + 3:
-    case tab_prg_pwm1 + 4:
-    case tab_prg_pwm1 + 5:
+    case tab_prg_pwm1_6:
+    case tab_prg_pwm1_6 + 1:
+    case tab_prg_pwm1_6 + 2:
+    case tab_prg_pwm1_6 + 3:
+    case tab_prg_pwm1_6 + 4:
+    case tab_prg_pwm1_6 + 5:
 
-      if (Program_set_pwm_debug(reg - tab_prg_pwm1, ModbusSS_GetWord(&mdb_table_program, reg)))
+      if (Program_set_pwm_debug(reg - tab_prg_pwm1_6, ModbusSS_GetWord(&mdb_table_program, reg)))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
@@ -293,39 +290,37 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
     value = ModbusSS_GetWord(&mdb_table_param, reg);
         switch (reg)
     {
-    case tab_param_analog_shift_1_11 ... tab_param_analog_shift_1_11 + PRG_ANALOG_COUNT - 1:
-      idx = reg - tab_param_analog_shift_1_11;
-      if(Program_analogSetShift(idx, value)){
+    case tab_param_analog_shift_1_7 ... tab_param_analog_shift_1_7 + PRG_ANALOG_COUNT - 1:
+      idx = reg - tab_param_analog_shift_1_7;
+      if (Program_analogSetShift(idx, value))
+      {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
       break;
-    case tab_param_analog_kMul_1_11 ... tab_param_analog_kMul_1_11 + PRG_ANALOG_COUNT - 1:
-      idx = reg - tab_param_analog_kMul_1_11;
+    case tab_param_analog_kMul_1_7 ... tab_param_analog_kMul_1_7 + PRG_ANALOG_COUNT - 1:
+      idx = reg - tab_param_analog_kMul_1_7;
       sign_val = value;
-      if(Program_analogSetKMul(idx, sign_val * analog_kMul)){
+      if (Program_analogSetKMul(idx, sign_val * analog_kMul))
+      {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
       break;
-    case tab_param_analog_av_order_1_11 ... tab_param_analog_av_order_1_11 + PRG_ANALOG_COUNT - 1:
-      idx = reg - tab_param_analog_av_order_1_11;
-      if(Program_analogSetAvOrder(idx, value)){
+    case tab_param_analog_av_order_1_7 ... tab_param_analog_av_order_1_7 + PRG_ANALOG_COUNT - 1:
+      idx = reg - tab_param_analog_av_order_1_7;
+      if (Program_analogSetAvOrder(idx, value))
+      {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
       break;
-    case tab_param_analog_filter_N_1_11 ... tab_param_analog_filter_N_1_11 + PRG_ANALOG_COUNT - 1:
-      idx = reg - tab_param_analog_filter_N_1_11;
-      if(Program_analogSetFilterN(idx, value)){
+    case tab_param_analog_filter_N_1_7 ... tab_param_analog_filter_N_1_7 + PRG_ANALOG_COUNT - 1:
+      idx = reg - tab_param_analog_filter_N_1_7;
+      if (Program_analogSetFilterN(idx, value))
+      {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
       break;
-    case tab_param_protect_control_B_1:
-      programStruct.setupParam.protect_control &= 0xFFFFFFFFFFFF0000;
-      programStruct.setupParam.protect_control |= (uint64_t)value;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      break;
-    case tab_param_protect_control_B_2:
-      programStruct.setupParam.protect_control &= 0xFFFFFFFF0000FFFF;
-      programStruct.setupParam.protect_control |= ((uint64_t)value << 16);
+    case tab_param_protect_control:
+      programStruct.setupParam.protect_control = (uint32_t)value;
       response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       break;
     }
