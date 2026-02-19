@@ -5,7 +5,7 @@
 
 uint8_t modbusBufRxTxRtu485[MODBUS_SS_BUF_CNT];
 
-//--------------------  PROTOCOL ---------------------//float value = 0.0f;
+//--------------------  PROTOCOL ---------------------
 //---1000
 #define MDB_TABLE_BSP_REG_NO (1000)
 enum mdb_table_bsp
@@ -54,7 +54,8 @@ ModbusSS_table_t mdb_table_program = {
     .regNo = MDB_TABLE_PROGRAM_REG_NO,
     .type = ModbusSS_Holding};
 
-    #define MDB_TABLE_PARAM_REG_NO (1400)
+//---1400
+#define MDB_TABLE_PARAM_REG_NO (1400)
 enum mdb_table_param
 {
   tab_param_analog_shift_1_7    = MDB_TABLE_PARAM_REG_NO,                           // 1400 ... 1406
@@ -71,8 +72,6 @@ ModbusSS_table_t mdb_table_param = {
     .quantity = MDB_PARAM_BUF_COUNT,
     .regNo = MDB_TABLE_PARAM_REG_NO,
     .type = ModbusSS_Holding};
-
-
 //--------------------  PROTOCOL END---------------------//
 
 //--------------------  TABLES ARRAY ---------------------//
@@ -142,42 +141,35 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
   
   uint16_t analogStartIdx = tab_prg_analogVal_Uzpt;
   uint16_t analogStopIdx = tab_prg_analogVal_Iout2;
-  int16_t val = 0.0f;
 
   for (uint8_t i = 0; i < (analogStopIdx - analogStartIdx + 1); i++)
   {
-    val = Program_analogGetByIdx(i)->value;
-    ModbusSS_SetWord(&mdb_table_program, analogStartIdx + i, val);                      // 1206 ... 1212
+    ModbusSS_SetWord(&mdb_table_program, analogStartIdx + i, (int16_t)Program_analogGetByIdx(i)->value);                      // 1206 ... 1212
   }
   
   for (uint8_t i = 0; i < 6; i++)
   {
-    ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1_6 + i ,programStruct.control.remote.pwmArray[i]); // 1213 ... 1218
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1_6 + i, programStruct.control.remote.pwmArray[i]); // 1213 ... 1218
   }
  
     // PARAM -----------------------------//
   //-----Analog param
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_7 + i, Program_analogGetByIdx(i)->shift);
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_7 + i, programStruct.setupParam.analog_shift[i]);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_7 + i, programStruct.setupParam.analog_shift[i]);
   }
   float analog_kMul = 100000.0f;
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    val = (programStruct.setupParam.analog_kMul[i] * analog_kMul);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, Program_analogGetByIdx(i)->kMul * analog_kMul);
-    // ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, val);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, (int16_t)(programStruct.setupParam.analog_kMul[i] * analog_kMul));
   }
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_7 + i, Program_analogGetByIdx(i)->order);
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_7 + i, programStruct.setupParam.analog_av_order[i]);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_av_order_1_7 + i, programStruct.setupParam.analog_av_order[i]);
   }
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_7 + i, Program_analogGetByIdx(i)->analogFilterN);
-    //ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_7 + i, programStruct.setupParam.analog_filter_N[i]);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_7 + i, programStruct.setupParam.analog_filter_N[i]);
   }
 }
 //------------------------ REGULAR FCN END------------------------
