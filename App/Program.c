@@ -214,29 +214,29 @@ void Program_ParamSetToDefault()
  
     for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
     {
-        programStruct.setupParam.analog_av_order[i] = 18;  // 1 - фильтр отключен
-        programStruct.setupParam.analog_filter_N[i] = 260; // 1 - Фильтр отключен
+        programStruct.setupParam.analog_av_order[i] = 10;  // 1 - фильтр отключен
+        programStruct.setupParam.analog_filter_N[i] = 100; // 1 - Фильтр отключен
     }
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  =  1.0f;                 // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 1.0f;                  // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_Uzpt] = 1.0f;                  // вписать после калбировки датчиков
 
     programStruct.setupParam.analog_kMul[prg_analog_Uout_power_block]  = 1.0f;      // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_Uout_power_block] = 1.0f;      // вписать после калбировки датчиков 
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uout] = 1.0f;                   // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 1.0f;                  // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_Uout] = 1.0f;                  // вписать после калбировки датчиков
 
-    programStruct.setupParam.analog_kMul[prg_analog_I_L3] = 1.0f;                   // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_I_L3]  = 1.0f;                  // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_I_L3] = 1.0f;                  // вписать после калбировки датчиков
 
-    programStruct.setupParam.analog_kMul[prg_analog_I_L4] = 1.0f;                   // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_I_L4]  = 1.0f;                  // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_I_L4] = 1.0f;                  // вписать после калбировки датчиков 
 
-    programStruct.setupParam.analog_kMul[prg_analog_Iout1] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Iout1]  = 1.0f;                 // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_Iout1] = 1.0f;                 // вписать после калбировки датчиков          
 
-    programStruct.setupParam.analog_kMul[prg_analog_Iout2] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Iout2]  = 1.0f;                 // вписать после калбировки датчиков
     programStruct.setupParam.analog_shift[prg_analog_Iout2] = 1.0f;                 // вписать после калбировки датчиков
 }
 
@@ -303,26 +303,30 @@ __INLINE uint8_t Program_set_dout_debug(uint16_t douts)
     return 0;
 }
 
-#define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (600)
+#define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (250)
 #define PWM_REMOTE_MAX_PERCENT (1000)
 __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc)
 {
-
     if (channel_IDx > 5)
+    {
         return 0;
-
+    }
+        
     if (programStruct.control.step == step_debug)
     {
-
         if (channel_IDx < 3)
         {
-            if (pwm1000Perc > PWM_REMOTE_MAX_PERCENT_STEP_UP_X10)
-                pwm1000Perc = PWM_REMOTE_MAX_PERCENT_STEP_UP_X10;
+            if (pwm1000Perc > PWM_REMOTE_MAX_PERCENT)
+            {
+                pwm1000Perc = PWM_REMOTE_MAX_PERCENT;
+            }  
         }
         else
         {
-            if (pwm1000Perc > PWM_REMOTE_MAX_PERCENT)
-                pwm1000Perc = PWM_REMOTE_MAX_PERCENT;
+            if (pwm1000Perc > PWM_REMOTE_MAX_PERCENT_STEP_UP_X10)
+            {
+                pwm1000Perc = PWM_REMOTE_MAX_PERCENT_STEP_UP_X10;
+            }   
         }
         programStruct.control.remote.pwmArray[channel_IDx] = pwm1000Perc;
         return 1;
@@ -332,8 +336,8 @@ __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc
 
 __INLINE uint8_t Program_GoReset()
 {
-    if(programStruct.control.step == step_debug){
-
+    if(programStruct.control.step == step_debug)
+    {
         Program_switchTarget(target_reset);
         return 1;
     }
@@ -353,9 +357,11 @@ __INLINE uint8_t Program_LoadDefaultParam_debug()
 __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error)
 {
     if (error == error_noError)
+    {
         return 0;
-
-    if (programStruct.setupParam.protect_control & (uint32_t)(1 << (error - 1)))
+    }
+        
+    if (programStruct.setupParam.protect_control & (uint16_t)(1 << (error - 1)))
     {
         return 0;
     }
@@ -366,13 +372,12 @@ __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error)
 
 __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 {
-
     programStruct.control.target = newTarget;
 }
 //------------  ФУНКЦИИ КОНЕЦ ------------//
 
 //------------   Задача 1 кГц   ------------//
-#define PRG_UPDATE_MDB (100)
+#define PRG_UPDATE_MDB (150)
 void bsp_sys_tick_1k_callback()
 {
     // static uint16_t count_1k_mdb = 0;
@@ -451,32 +456,30 @@ __STATIC_INLINE void Program_pwmOutsControl(bsp_pwm_outs_group_typedef group, ui
 
     if (group == bsp_pwm_outs_group_123)
     {
-        bsp_pwm_enable_out_VT_CONCEPT(0, bsp_pwm_outs_type_all);
+        bsp_pwm_enable_out_VT_CONCEPT(0, bsp_pwm_outs_type_high);
         bsp_pwm_enable_out_VT_CONCEPT(1, bsp_pwm_outs_type_high);
-        bsp_pwm_enable_out_VT_CONCEPT(2, bsp_pwm_outs_type_high);
     }
     else
     {
-        bsp_pwm_enable_out_VT_CONCEPT(3, bsp_pwm_outs_type_high);
+        bsp_pwm_enable_out_VT_CONCEPT(3, bsp_pwm_outs_type_low);
         bsp_pwm_enable_out_VT_CONCEPT(4, bsp_pwm_outs_type_low);
-        bsp_pwm_enable_out_VT_CONCEPT(5, bsp_pwm_outs_type_high);
     }
 }
 
 __STATIC_INLINE void Program_pwmInit()
 {
-  bsp_pwm_set_tim(bsp_pwm_tim_mode_up, 300, BSP_PWM_POSITIVE_POLARITY);
+  bsp_pwm_set_tim (bsp_pwm_tim_mode_up_down, 250, BSP_PWM_POSITIVE_POLARITY);
 
-  bsp_pwm_set_freq(bsp_pwm_outs_group_123,bsp_pwm_freq_4000_hz, 1);
-  bsp_pwm_set_freq(bsp_pwm_outs_group_456,bsp_pwm_freq_4000_hz, 1);
+  bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4000_hz, 1);
+  bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4000_hz, 1);
 
-  SET_PWM_STEP_UP(0,0.0f);
-  SET_PWM_STEP_UP(1,0.0f);
-  SET_PWM_STEP_UP(2,0.0f);
+  SET_PWM_STEP_DOWN (0,0.0f);
+  SET_PWM_STEP_DOWN (1,0.0f);
+  SET_PWM_STEP_DOWN (2,0.0f);
 
-  SET_PWM_STEP_DOWN(3,0.0f);
-  SET_PWM_STEP_UP(4,0.0f);
-  SET_PWM_STEP_DOWN(5,0.0f);
+  SET_PWM_STEP_UP (3,0.0f);
+  SET_PWM_STEP_UP (4,0.0f);
+  SET_PWM_STEP_UP (5,0.0f);
 
   bsp_pwm_start_IRQ_123_IRQ_456();
 }
@@ -486,23 +489,27 @@ __STATIC_INLINE void Program_regulatorInit()
     asm("Nop");
 }
 
-uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOff){
-
-    if ( programStruct.control.step != step_debug )
+uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOff)
+{
+    if (programStruct.control.step != step_debug)
     {
         return 0;
     }
 
-    if(group == bsp_pwm_outs_group_123){
-            programStruct.control.remote.pwmEnable123 = onOff;
-    }else if(group == bsp_pwm_outs_group_456){
-            programStruct.control.remote.pwmEnable456 = onOff;
-    }else{
+    if (group == bsp_pwm_outs_group_123)
+    {
+        programStruct.control.remote.pwmEnable123 = onOff;
+    }
+    else if (group == bsp_pwm_outs_group_456)
+    {
+        programStruct.control.remote.pwmEnable456 = onOff;
+    }
+    else
+    {
         return 0;
     }
     return 1;
 }
-
 
 void bsp_pwm_123_callback()
 {
@@ -511,16 +518,6 @@ void bsp_pwm_123_callback()
         return;
     }
 }
-
-void bsp_pwm_456_callback()
-{
-    if (programStruct.control.step == step_debug)
-    {
-        return;
-    }
-}
-
-
 //----------------------- PWM END----------------------
 
 //------------   АЦП   ------------//

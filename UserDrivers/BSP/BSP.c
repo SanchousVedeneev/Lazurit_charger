@@ -1,17 +1,10 @@
 
 #include "BSP.h"
 
-//-------------------------------
 #include "tim.h"
 #include "spi.h"
 #include "usart.h"
-
 #include "DSP.h"
-//-------------------------------
-
-// ------------------------------ DBG MCU ------------------------------
-
-// ------------------------------ DBG MCU END ------------------------------
 
 // ------------------------------ SPI DIN DOUT ------------------------------
 /*
@@ -482,18 +475,23 @@ void bsp_pwm_set_tim(bsp_pwm_tim_mode_typedef mode, uint16_t DT, uint32_t polari
 
   for (size_t i = 0; i < 6; i++)
   {
-    tim = (1 << (i + 17));  //LL_HRTIM_TIMER_A + i
+    tim = (1 << (i + 17)); // LL_HRTIM_TIMER_A + i
     TxOut1 = (1 << (i * 2));
     TxOut2 = (1 << (i * 2 + 1));
-    //LL_HRTIM_EnableSwapOutputs(HRTIM1, tim);
 
     LL_HRTIM_TIM_SetPrescaler(HRTIM1, tim, LL_HRTIM_PRESCALERRATIO_DIV1);
     LL_HRTIM_TIM_SetCounterMode(HRTIM1, tim, LL_HRTIM_MODE_CONTINUOUS);
     LL_HRTIM_TIM_SetPeriod(HRTIM1, tim, _HRTIM_PERIOD);
     LL_HRTIM_TIM_SetRepetition(HRTIM1, tim, 0x00);
     LL_HRTIM_TIM_SetUpdateGating(HRTIM1, tim, LL_HRTIM_UPDATEGATING_INDEPENDENT);
-    if(mode == bsp_pwm_tim_mode_up)  LL_HRTIM_TIM_SetCountingMode(HRTIM1, tim, LL_HRTIM_COUNTING_MODE_UP);
-    if(mode == bsp_pwm_tim_mode_up_down)  LL_HRTIM_TIM_SetCountingMode(HRTIM1, tim, LL_HRTIM_COUNTING_MODE_UP_DOWN);
+    if (mode == bsp_pwm_tim_mode_up)
+    {
+      LL_HRTIM_TIM_SetCountingMode(HRTIM1, tim, LL_HRTIM_COUNTING_MODE_UP);
+    } 
+    else if (mode == bsp_pwm_tim_mode_up_down)
+    {
+      LL_HRTIM_TIM_SetCountingMode(HRTIM1, tim, LL_HRTIM_COUNTING_MODE_UP_DOWN);
+    } 
     LL_HRTIM_TIM_SetComp1Mode(HRTIM1, tim, LL_HRTIM_GTCMP1_EQUAL);
     LL_HRTIM_TIM_SetRollOverMode(HRTIM1, tim, LL_HRTIM_ROLLOVER_MODE_BOTH);
     LL_HRTIM_TIM_SetFaultEventRollOverMode(HRTIM1, tim, LL_HRTIM_ROLLOVER_MODE_BOTH);
@@ -520,8 +518,14 @@ void bsp_pwm_set_tim(bsp_pwm_tim_mode_typedef mode, uint16_t DT, uint32_t polari
     LL_HRTIM_DT_SetFallingSign(HRTIM1, tim, LL_HRTIM_DT_FALLING_POSITIVE);
     LL_HRTIM_OUT_SetPolarity(HRTIM1, TxOut1, polarity);
     LL_HRTIM_OUT_SetOutputSetSrc(HRTIM1, TxOut1, LL_HRTIM_OUTPUTSET_TIMCMP1);
-    if(mode == bsp_pwm_tim_mode_up) LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut1, LL_HRTIM_OUTPUTRESET_TIMPER);
-    if(mode == bsp_pwm_tim_mode_up_down) LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut1, LL_HRTIM_OUTPUTRESET_NONE);
+    if (mode == bsp_pwm_tim_mode_up)
+    {
+      LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut1, LL_HRTIM_OUTPUTRESET_TIMPER);
+    }
+    else if (mode == bsp_pwm_tim_mode_up_down)
+    {
+      LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut1, LL_HRTIM_OUTPUTRESET_NONE);
+    }
     LL_HRTIM_OUT_SetIdleMode(HRTIM1, TxOut1, LL_HRTIM_OUT_NO_IDLE);
     LL_HRTIM_OUT_SetIdleLevel(HRTIM1, TxOut1, LL_HRTIM_OUT_IDLELEVEL_INACTIVE);
     LL_HRTIM_OUT_SetFaultState(HRTIM1, TxOut1, LL_HRTIM_OUT_FAULTSTATE_NO_ACTION);
@@ -529,13 +533,18 @@ void bsp_pwm_set_tim(bsp_pwm_tim_mode_typedef mode, uint16_t DT, uint32_t polari
     LL_HRTIM_OUT_SetPolarity(HRTIM1, TxOut2, polarity);
     LL_HRTIM_OUT_SetOutputSetSrc(HRTIM1, TxOut2, LL_HRTIM_OUTPUTSET_NONE);
     LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut2, LL_HRTIM_OUTPUTRESET_TIMPER);
-    if(mode == bsp_pwm_tim_mode_up) LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut2, LL_HRTIM_OUTPUTRESET_TIMPER);
-    if(mode == bsp_pwm_tim_mode_up_down) LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut2, LL_HRTIM_OUTPUTRESET_NONE);
+    if (mode == bsp_pwm_tim_mode_up)
+    {
+      LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut2, LL_HRTIM_OUTPUTRESET_TIMPER);
+    } 
+    else if (mode == bsp_pwm_tim_mode_up_down)
+    {
+      LL_HRTIM_OUT_SetOutputResetSrc(HRTIM1, TxOut2, LL_HRTIM_OUTPUTRESET_NONE);
+    }
     LL_HRTIM_OUT_SetIdleMode(HRTIM1, TxOut2, LL_HRTIM_OUT_NO_IDLE);
     LL_HRTIM_OUT_SetIdleLevel(HRTIM1, TxOut2, LL_HRTIM_OUT_IDLELEVEL_INACTIVE);
     LL_HRTIM_OUT_SetFaultState(HRTIM1, TxOut2, LL_HRTIM_OUT_FAULTSTATE_NO_ACTION);
     LL_HRTIM_OUT_SetChopperMode(HRTIM1, TxOut2, LL_HRTIM_OUT_CHOPPERMODE_DISABLED);
-
 
     while (LL_HRTIM_IsActiveFlag_DLLRDY(HRTIM1) == RESET)
     {
@@ -544,7 +553,8 @@ void bsp_pwm_set_tim(bsp_pwm_tim_mode_typedef mode, uint16_t DT, uint32_t polari
   }
 }
 
-static const uint32_t out1_array[] = {
+static const uint32_t out1_array[] = 
+{
   LL_HRTIM_OUTPUT_TF1,
   LL_HRTIM_OUTPUT_TC1,
   LL_HRTIM_OUTPUT_TD1,
@@ -552,7 +562,8 @@ static const uint32_t out1_array[] = {
   LL_HRTIM_OUTPUT_TE1,
   LL_HRTIM_OUTPUT_TA1
 };
-static const uint32_t out2_array[] = {
+static const uint32_t out2_array[] = 
+{
   LL_HRTIM_OUTPUT_TF2,
   LL_HRTIM_OUTPUT_TC2,
   LL_HRTIM_OUTPUT_TD2,
@@ -595,10 +606,10 @@ void bsp_pwm_enable_outs_VT_CONCEPT(bsp_pwm_outs_group_typedef group, bsp_pwm_ou
   uint8_t lowSide = 0;
   uint8_t highSide = 0;
 
-  uint32_t group123_high =  BSP_PWM_TIM_OUTS_123_HIGH;
-  uint32_t group123_low =   BSP_PWM_TIM_OUTS_123_LOW;
-  uint32_t group456_high =  BSP_PWM_TIM_OUTS_456_HIGH;
-  uint32_t group456_low =    BSP_PWM_TIM_OUTS_456_LOW;
+  uint32_t group123_high = BSP_PWM_TIM_OUTS_123_HIGH;
+  uint32_t group123_low = BSP_PWM_TIM_OUTS_123_LOW;
+  uint32_t group456_high = BSP_PWM_TIM_OUTS_456_HIGH;
+  uint32_t group456_low = BSP_PWM_TIM_OUTS_456_LOW;
 
   /*
     На плате перепутаны верхний и нижний ключ
@@ -619,79 +630,93 @@ void bsp_pwm_enable_outs_VT_CONCEPT(bsp_pwm_outs_group_typedef group, bsp_pwm_ou
     break;
   default:
     break;
-    }
+  }
 
-    if(group == bsp_pwm_outs_group_123){
-          controlWord = group123_high * highSide + group123_low * lowSide;
-    }else if(group == bsp_pwm_outs_group_456){
-          controlWord = group456_high * highSide + group456_low * lowSide;
-    }
+  if (group == bsp_pwm_outs_group_123)
+  {
+    controlWord = group123_high * highSide + group123_low * lowSide;
+  }
+  else if (group == bsp_pwm_outs_group_456)
+  {
+    controlWord = group456_high * highSide + group456_low * lowSide;
+  }
 
-    LL_HRTIM_EnableOutput(HRTIM1,controlWord);
+  LL_HRTIM_EnableOutput(HRTIM1, controlWord);
 }
 
-void bsp_pwm_disable_outs_VT(bsp_pwm_outs_group_typedef group){
-
+void bsp_pwm_disable_outs_VT(bsp_pwm_outs_group_typedef group)
+{
   uint32_t controlWord = 0;
 
-  uint32_t group123 =  BSP_PWM_TIM_OUTS_123_HIGH | BSP_PWM_TIM_OUTS_123_LOW;
-  uint32_t group456 =  BSP_PWM_TIM_OUTS_456_HIGH | BSP_PWM_TIM_OUTS_456_LOW;
+  uint32_t group123 = BSP_PWM_TIM_OUTS_123_HIGH | BSP_PWM_TIM_OUTS_123_LOW;
+  uint32_t group456 = BSP_PWM_TIM_OUTS_456_HIGH | BSP_PWM_TIM_OUTS_456_LOW;
 
-    if(group == bsp_pwm_outs_group_123){
-          controlWord = group123;
-    }else if(group == bsp_pwm_outs_group_456){
-          controlWord = group456;
-    }
-    LL_HRTIM_DisableOutput(HRTIM1,controlWord);
+  if (group == bsp_pwm_outs_group_123)
+  {
+    controlWord = group123;
+  }
+  else if (group == bsp_pwm_outs_group_456)
+  {
+    controlWord = group456;
+  }
+  LL_HRTIM_DisableOutput(HRTIM1, controlWord);
 }
 
-void bsp_pwm_disable_all_outs_VT(){
-
+void bsp_pwm_disable_all_outs_VT()
+{
   LL_HRTIM_DisableOutput(HRTIM1,  BSP_PWM_TIM_OUTS_123_HIGH | 
                                   BSP_PWM_TIM_OUTS_123_LOW  |
                                   BSP_PWM_TIM_OUTS_456_HIGH |
                                   BSP_PWM_TIM_OUTS_456_LOW  );
 }
 
-static uint16_t freqArrayArr[] = {
-  48000,//  bsp_pwm_freq_3500_hz,       //48000  24000    +
-  42000,//   bsp_pwm_freq_4000_hz,      //42000  21000    +
-  30000,//  bsp_pwm_freq_5600_hz,       //30000  15000    +
-  24000,//  bsp_pwm_freq_7000_hz,       //24000  12000    +
-  19200,//  bsp_pwm_freq_8750_hz,       //19200  9600     +
-  16800//  bsp_pwm_freq_10000_hz        //16800  8400     +
+static uint16_t freqArrayArr[] = 
+{
+  24000,    //  bsp_pwm_freq_3500_hz,   // mode_UP 48000  mode_UP_DOWN 24000 
+  21000,    //  bsp_pwm_freq_4000_hz,   // mode_UP 42000  mode_UP_DOWN 21000 
+  20000,    //  bsp_pwm_freq_4200_hz,   // mode_UP 40000  mode_UP_DOWN 20000
+  17500,    //  bsp_pwm_freq_4800_hz,   // mode_UP 35000  mode_UP_DOWN 17500
+  16800,    //  bsp_pwm_freq_5000_hz,   // mode_UP 33600  mode_UP_DOWN 16800
+  15000     //  bsp_pwm_freq_5600_hz    // mode_UP 30000  mode_UP_DOWN 15000
 };
 
-uint8_t bsp_pwm_set_freq(bsp_pwm_outs_group_typedef group, bsp_pwm_freq_typedef freq, uint8_t phaseShift){
-
+uint8_t bsp_pwm_set_freq(bsp_pwm_outs_group_typedef group, bsp_pwm_freq_typedef freq, uint8_t phaseShift)
+{
   uint16_t _freq = freqArrayArr[freq];
 
-    while (LL_HRTIM_IsActiveFlag_DLLRDY(HRTIM1) == RESET)
+  while (LL_HRTIM_IsActiveFlag_DLLRDY(HRTIM1) == RESET)
   {
     asm("NOP");
   }
 
-
-  if(freq > bsp_pwm_freq_10000_hz){
-    return 0;
+  if (freq < bsp_pwm_freq_3500_hz)
+  {
+    freq = freqArrayArr[bsp_pwm_freq_4000_hz];
+  }
+  else if (freq > bsp_pwm_freq_5600_hz)
+  {
+    freq = freqArrayArr[bsp_pwm_freq_4000_hz];
   }
 
-  if(group == bsp_pwm_outs_group_123){
+  if (group == bsp_pwm_outs_group_123)
+  {
     BSP_PWM_SET_PERIOD_VT1(_freq);
     BSP_PWM_SET_PERIOD_VT2(_freq);
     BSP_PWM_SET_PERIOD_VT3(_freq);
-    if(phaseShift){
-        BSP_PWM_SET_CNT_VT2(_freq/3);
-        BSP_PWM_SET_CNT_VT3(2*(_freq/3));
+    if (phaseShift)
+    {
+      BSP_PWM_SET_CNT_VT2(_freq/2);
     }
     LL_HRTIM_ForceUpdate(HRTIM1, BSP_PWM_TIM_PWM_1 | BSP_PWM_TIM_PWM_2 | BSP_PWM_TIM_PWM_3);
-  }else{
+  }
+  else
+  {
     BSP_PWM_SET_PERIOD_VT4(_freq);
     BSP_PWM_SET_PERIOD_VT5(_freq);
     BSP_PWM_SET_PERIOD_VT6(_freq);
-    if(phaseShift){
-        BSP_PWM_SET_CNT_VT5(_freq/3);
-        BSP_PWM_SET_CNT_VT6(2*(_freq/3));
+    if(phaseShift)
+    {
+      BSP_PWM_SET_CNT_VT5(_freq/2);
     }
     LL_HRTIM_ForceUpdate(HRTIM1, BSP_PWM_TIM_PWM_4 | BSP_PWM_TIM_PWM_5 | BSP_PWM_TIM_PWM_6);
   }
@@ -699,32 +724,43 @@ uint8_t bsp_pwm_set_freq(bsp_pwm_outs_group_typedef group, bsp_pwm_freq_typedef 
   return 1;
 }
 
-static const uint32_t timer_array[] = {
-    BSP_PWM_TIM_PWM_1,
-    BSP_PWM_TIM_PWM_2,
-    BSP_PWM_TIM_PWM_3,
-    BSP_PWM_TIM_PWM_4,
-    BSP_PWM_TIM_PWM_5,
-    BSP_PWM_TIM_PWM_6};
+static const uint32_t timer_array[] = 
+{
+  BSP_PWM_TIM_PWM_1,
+  BSP_PWM_TIM_PWM_2,
+  BSP_PWM_TIM_PWM_3,
+  BSP_PWM_TIM_PWM_4,
+  BSP_PWM_TIM_PWM_5,
+  BSP_PWM_TIM_PWM_6
+};
 
-uint8_t bsp_pwm_set_ccrPercentX10(uint8_t ccrIdx, float valuePercentX10){
+uint8_t bsp_pwm_set_ccrPercentX10(uint8_t ccrIdx, float valuePercentX10)
+{
 
-    if(ccrIdx > 5) return 0;
+  if (ccrIdx > 5)
+  {
+    return 0;
+  }
 
-    uint16_t arr = LL_HRTIM_TIM_GetPeriod(HRTIM1,timer_array[ccrIdx]);
-    float ccr = arr * valuePercentX10;
-    ccr /= 1000.0f;
+  uint16_t arr = LL_HRTIM_TIM_GetPeriod(HRTIM1, timer_array[ccrIdx]);
+  float ccr = arr * valuePercentX10;
+  ccr /= 1000.0f;
 
+  if (ccr < 0.0f)
+  {
+    ccr = 0.0f;
+  }
+  else if (ccr > (arr - 1))
+  {
+    ccr = arr + 1;
+  }
+    
+  /*
+    Если ccr == arr, происходит сбой
+  */
 
-    if(ccr<0.0f) ccr = 0.0f;
-    else if(ccr > (arr - 1)) ccr = arr + 1;
-
-    /*
-      Если ccr == arr, происходит сбой
-    */
-
-    BSP_PWM_SET_CCR(timer_array[ccrIdx], ccr);
-    return 1;
+  BSP_PWM_SET_CCR (timer_array[ccrIdx], ccr);
+  return 1;
 }
 
 void bsp_pwm_start_IRQ_123_IRQ_456()
@@ -735,39 +771,21 @@ void bsp_pwm_start_IRQ_123_IRQ_456()
   }
 
   HAL_Delay(1);
-  LL_HRTIM_EnableIT_UPDATE(HRTIM1, LL_HRTIM_TIMER_A);
+  // LL_HRTIM_EnableIT_UPDATE(HRTIM1, LL_HRTIM_TIMER_A);
   LL_HRTIM_EnableIT_UPDATE(HRTIM1, LL_HRTIM_TIMER_D);
-
-
-
-  // BSP_PWM_ENABLE_OUTS_123();
-  // BSP_PWM_ENABLE_OUTS_456();
-
   BSP_PWM_START_ALL_CNT();
 }
 
-// __INLINE void bsp_pwm_start_IRQ_group123(){
-
-// }
-
 void BSP_PWM_IRQ_HANDLER_123()
 {
-
   BSP_PWM_IRQ_CLEAR_FLAG_123();
-
-  //BSP_LED_TOGGLE(BSP_LED_LINK);
   bsp_pwm_123_callback();
 }
-
 void BSP_PWM_IRQ_HANDLER_456()
 {
-
   BSP_PWM_IRQ_CLEAR_FLAG_456();
-
-  //BSP_LED_TOGGLE(BSP_LED_FAULT);
   bsp_pwm_456_callback();
 }
-
 
 __weak void bsp_pwm_123_callback(){
     asm("NOP");
@@ -775,5 +793,4 @@ __weak void bsp_pwm_123_callback(){
 __weak void bsp_pwm_456_callback(){
     asm("NOP");
 }
-
 // ------------------------------ PWM END------------------------------

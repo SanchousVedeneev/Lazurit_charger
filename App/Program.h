@@ -155,7 +155,7 @@ typedef struct
     uint8_t analog_av_order[PRG_ANALOG_COUNT];  //+
     uint16_t analog_filter_N[PRG_ANALOG_COUNT]; //+
 
-    uint32_t protect_control; // по умолчанию =0
+    uint16_t protect_control; // по умолчанию =0
 }Program_PARAM_typedef;
 
 

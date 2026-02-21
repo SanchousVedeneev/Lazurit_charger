@@ -3,12 +3,6 @@
 
 #include "main.h"
 
-
-
-
-
-
-
 typedef struct
 {
     float k_P;
@@ -28,7 +22,6 @@ typedef struct
 
     float IntMax;
     float IntMin;
-
 } dsp_regulator_typedef;
 
 
@@ -39,18 +32,17 @@ typedef struct
     float out;
     float period;
     float settings;
-}dsp_intensSetter_typedef;
+} dsp_intensSetter_typedef;
 
 void dsp_intensSetterSetup(dsp_intensSetter_typedef* intens, float setting, float period);
 void dsp_intensSetterUpProcess(dsp_intensSetter_typedef* intens);
 void dsp_intensSetterReset(dsp_intensSetter_typedef* intens);
 
-
 typedef struct
 {
 	float x;
 	float y;
-}dsp_point_typedef;
+} dsp_point_typedef;
 
 float dsp_regulatorProcess(dsp_regulator_typedef *r);
 void dsp_regulatorReset(dsp_regulator_typedef *r);

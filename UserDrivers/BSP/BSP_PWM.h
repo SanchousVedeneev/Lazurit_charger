@@ -89,15 +89,16 @@ void bsp_pwm_456_callback();
 
 //---------------------------- IRQ HANDLERS END----------------------------
 
-
 // polarity POSITIVE PWM -> LL_HRTIM_OUT_POSITIVE_POLARITY
 // polarity NEGATIVE PWM -> LL_HRTIM_OUT_NEGATIVE_POLARITY
 #define BSP_PWM_POSITIVE_POLARITY LL_HRTIM_OUT_POSITIVE_POLARITY
 #define BSP_PWM_NEGATIVE_POLARITY LL_HRTIM_OUT_NEGATIVE_POLARITY
-typedef enum{
+typedef enum
+{
     bsp_pwm_tim_mode_up_down,
     bsp_pwm_tim_mode_up
 } bsp_pwm_tim_mode_typedef;
+
 void bsp_pwm_set_tim(bsp_pwm_tim_mode_typedef mode, uint16_t DT, uint32_t polarity);
 void bsp_pwm_start_IRQ_123_IRQ_456();
 
@@ -106,23 +107,25 @@ typedef enum{
     bsp_pwm_outs_group_456
 } bsp_pwm_outs_group_typedef;
 
-typedef enum{
+typedef enum
+{
     bsp_pwm_outs_type_high,
     bsp_pwm_outs_type_low,
     bsp_pwm_outs_type_all
-}bsp_pwm_outs_type_typedef;
+} bsp_pwm_outs_type_typedef;
 void bsp_pwm_enable_out_VT_CONCEPT(uint8_t outIdx, bsp_pwm_outs_type_typedef type);
 void bsp_pwm_enable_outs_VT_CONCEPT(bsp_pwm_outs_group_typedef group, bsp_pwm_outs_type_typedef type);
 void bsp_pwm_disable_outs_VT(bsp_pwm_outs_group_typedef group);
 
-typedef enum{              //up     up dowm
-    bsp_pwm_freq_3500_hz,  //48000  24000    +
-    bsp_pwm_freq_4000_hz,  //42000  21000    +
-    bsp_pwm_freq_5600_hz,  //30000  15000    +
-    bsp_pwm_freq_7000_hz,  //24000  12000    +
-    bsp_pwm_freq_8750_hz,  //19200  9600     +
-    bsp_pwm_freq_10000_hz  //16800  8400     +
-}bsp_pwm_freq_typedef;
+typedef enum
+{                          //up     up dowm
+    bsp_pwm_freq_3500_hz,  //48000  24000    
+    bsp_pwm_freq_4000_hz,  //42000  21000    
+    bsp_pwm_freq_4200_hz,  //40000  20000    
+    bsp_pwm_freq_4800_hz,  //35000  17500    
+    bsp_pwm_freq_5000_hz,  //33600  16800     
+    bsp_pwm_freq_5600_hz   //30000  15000     
+} bsp_pwm_freq_typedef;
 
 uint8_t bsp_pwm_set_freq(bsp_pwm_outs_group_typedef group, bsp_pwm_freq_typedef freq, uint8_t phaseShift);
 uint8_t bsp_pwm_set_ccrPercentX10(uint8_t ccrIdx, float valuePercentX10);
