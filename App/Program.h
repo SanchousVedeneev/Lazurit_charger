@@ -97,7 +97,8 @@ typedef struct
     dsp_intensSetter_typedef vodorod_ZI;
 }Program_SAU_typedef;
 
-#define PROGRAM_ADC_MAX_FILTER_ORDER (24)
+#define PROGRAM_ADC_MAX_FILTER_ORDER (16)
+#define PROGRAM_ADC_MAX_FILTERN (250)
 typedef struct
 {
        float value;

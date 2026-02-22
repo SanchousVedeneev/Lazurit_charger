@@ -1,7 +1,4 @@
-
-
 #include "Program.h"
-
 #include "ProtocolMbRtuSlaveCtrl.h"
 #include "FlashWorker.h"
 
@@ -82,26 +79,21 @@ __STATIC_INLINE void __stepDebug()
 {
     static uint16_t cnt_led = 0;
 
-//-----------------------  LED BLINK -----------------------
-    if(((cnt_led++)%100)==0){
+    if (((cnt_led++) % 100)==0)
+    {
         BSP_LED_TOGGLE(BSP_LED_RDY);
     }
-//-----------------------  LED BLINK END-----------------------
 
-
-//------------------------   DOUTS ------------------------------
     bsp_dInOut_setDouts1_10(programStruct.control.remote.dout.w16);
-//------------------------   DOUTS END------------------------------
 
     Program_pwmOutsControl(bsp_pwm_outs_group_123, programStruct.control.remote.pwmEnable123);
     Program_pwmOutsControl(bsp_pwm_outs_group_456, programStruct.control.remote.pwmEnable456);
 
-    SET_PWM_STEP_UP(0,programStruct.control.remote.pwmArray[0]);
-    SET_PWM_STEP_UP(1,programStruct.control.remote.pwmArray[1]);
-    SET_PWM_STEP_UP(2,programStruct.control.remote.pwmArray[2]);
-    SET_PWM_STEP_DOWN(3,programStruct.control.remote.pwmArray[3]);
-    SET_PWM_STEP_UP(4,programStruct.control.remote.pwmArray[4]);
-    SET_PWM_STEP_DOWN(5,programStruct.control.remote.pwmArray[5]);
+    SET_PWM_STEP_DOWN (0, programStruct.control.remote.pwmArray[0]);
+    SET_PWM_STEP_DOWN (1, programStruct.control.remote.pwmArray[1]);
+
+    SET_PWM_STEP_UP (3,programStruct.control.remote.pwmArray[3]);
+    SET_PWM_STEP_UP (4,programStruct.control.remote.pwmArray[4]);
 
 //---------------- переключатель
     switch (programStruct.control.target)
@@ -168,7 +160,6 @@ __STATIC_INLINE void __stepWaitOp()
 /*----------------------------- STEPS END ---------------------------------*/
 
 //------------  ФУНКЦИИ   ------------//
-#define TEST_PWM
 void Program_start()
 {
     protocolMbRtuSlaveCtrl_init(1);
@@ -192,16 +183,20 @@ void Program_start()
     Program_switchTarget(target_waitOp);
 }
 
-__STATIC_INLINE void Program_setDout(Program_dout_typedef dout){
-        bsp_dInOut_setDout(bsp_dInOut_out1 + dout);
+__STATIC_INLINE void Program_setDout(Program_dout_typedef dout)
+{
+    bsp_dInOut_setDout(bsp_dInOut_out1 + dout);
 }
-__STATIC_INLINE void Program_resetDout(Program_dout_typedef dout){
-        bsp_dInOut_resetDout(bsp_dInOut_out1 + dout);
+__STATIC_INLINE void Program_resetDout(Program_dout_typedef dout)
+{
+    bsp_dInOut_resetDout(bsp_dInOut_out1 + dout);
 }
-__STATIC_INLINE uint8_t Program_checkDin(Program_din_typedef din){
+__STATIC_INLINE uint8_t Program_checkDin(Program_din_typedef din)
+{
     return bsp_dInOut_readDin(bsp_dInOut_in1 + din);
 }
-__STATIC_INLINE void Program_fastStop(){
+__STATIC_INLINE void Program_fastStop()
+{
     /* снять все импульсы, выключить все контакторы*/
     Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
     Program_pwmOutsControl(bsp_pwm_outs_group_456, 0);
@@ -447,7 +442,6 @@ void bsp_sys_tick_1k_callback()
 //----------------------- PWM ----------------------
 __STATIC_INLINE void Program_pwmOutsControl(bsp_pwm_outs_group_typedef group, uint8_t enable)
 {
-
     if (enable == 0)
     {
         bsp_pwm_disable_outs_VT(group);
@@ -473,13 +467,13 @@ __STATIC_INLINE void Program_pwmInit()
   bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4000_hz, 1);
   bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4000_hz, 1);
 
-  SET_PWM_STEP_DOWN (0,0.0f);
-  SET_PWM_STEP_DOWN (1,0.0f);
-  SET_PWM_STEP_DOWN (2,0.0f);
+  SET_PWM_STEP_DOWN (0, 0.0f);
+  SET_PWM_STEP_DOWN (1, 0.0f);
+  SET_PWM_STEP_DOWN (2, 0.0f);
 
-  SET_PWM_STEP_UP (3,0.0f);
-  SET_PWM_STEP_UP (4,0.0f);
-  SET_PWM_STEP_UP (5,0.0f);
+  SET_PWM_STEP_UP (3, 0.0f);
+  SET_PWM_STEP_UP (4, 0.0f);
+  SET_PWM_STEP_UP (5, 0.0f);
 
   bsp_pwm_start_IRQ_123_IRQ_456();
 }
@@ -521,18 +515,19 @@ void bsp_pwm_123_callback()
 //----------------------- PWM END----------------------
 
 //------------   АЦП   ------------//
-Program_AIN_typedef* Program_analogGetByIdx(Program_ANALOG_ENUM_typedef idx){
-
-    if(idx >= PRG_ANALOG_COUNT){
+Program_AIN_typedef* Program_analogGetByIdx(Program_ANALOG_ENUM_typedef idx)
+{
+    if (idx >= PRG_ANALOG_COUNT)
+    {
         return NULL;
     }
-
     return &programStruct.analog.aIn[idx];
 }
 
-uint8_t Program_analogSetZero(Program_ANALOG_ENUM_typedef idx){
-    
-    if(programStruct.control.step != step_debug){
+uint8_t Program_analogSetZero(Program_ANALOG_ENUM_typedef idx)
+{  
+    if (programStruct.control.step != step_debug)
+    {
         return 0;
     }
     
@@ -546,9 +541,10 @@ uint8_t Program_analogSetZero(Program_ANALOG_ENUM_typedef idx){
     return 1;
 }
 
-uint8_t Program_analogCalibKMul(Program_ANALOG_ENUM_typedef idx, float value){
-
-    if(programStruct.control.step != step_debug){
+uint8_t Program_analogCalibKMul(Program_ANALOG_ENUM_typedef idx, float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
         return 0;
     }
 
@@ -558,7 +554,11 @@ uint8_t Program_analogCalibKMul(Program_ANALOG_ENUM_typedef idx, float value){
     }
 
     float kMul = programStruct.analog.aIn[idx].kMul;
-    if(kMul == 0.0f) return 0;
+
+    if (kMul == 0.0f) 
+    {
+        return 0;
+    }
     float currentVal = programStruct.analog.aIn[idx].value / kMul;
 
     programStruct.analog.aIn[idx].kMul = value / currentVal;
@@ -566,8 +566,8 @@ uint8_t Program_analogCalibKMul(Program_ANALOG_ENUM_typedef idx, float value){
     return 1;
 }
 
-uint8_t Program_analogSetShift(Program_ANALOG_ENUM_typedef idx, float value){
-
+uint8_t Program_analogSetShift(Program_ANALOG_ENUM_typedef idx, float value)
+{
     if (programStruct.control.step != step_debug)
     {
         return 0;
@@ -582,7 +582,8 @@ uint8_t Program_analogSetShift(Program_ANALOG_ENUM_typedef idx, float value){
     return 1;
 }
 
-uint8_t Program_analogSetKMul(Program_ANALOG_ENUM_typedef idx, float value){
+uint8_t Program_analogSetKMul(Program_ANALOG_ENUM_typedef idx, float value)
+{
 
     if (programStruct.control.step != step_debug)
     {
@@ -598,8 +599,8 @@ uint8_t Program_analogSetKMul(Program_ANALOG_ENUM_typedef idx, float value){
     return 1;
 }
 
-uint8_t Program_analogSetAvOrder(Program_ANALOG_ENUM_typedef idx, uint8_t order){
-
+uint8_t Program_analogSetAvOrder(Program_ANALOG_ENUM_typedef idx, uint8_t order)
+{
     if (programStruct.control.step != step_debug)
     {
         return 0;
@@ -610,13 +611,20 @@ uint8_t Program_analogSetAvOrder(Program_ANALOG_ENUM_typedef idx, uint8_t order)
         return 0;
     }
 
-    if(order < 1 ) order = 1;
-    else if (order > PROGRAM_ADC_MAX_FILTER_ORDER) order = PROGRAM_ADC_MAX_FILTER_ORDER;
+    if (order < 1) 
+    {
+        order = 1;
+    }
+    else if (order > PROGRAM_ADC_MAX_FILTER_ORDER)
+    {
+        order = PROGRAM_ADC_MAX_FILTER_ORDER;
+    }
     programStruct.setupParam.analog_av_order[idx] = order;
     return 1;
 }
 
-uint8_t Program_analogSetFilterN(Program_ANALOG_ENUM_typedef idx, uint16_t filterN){
+uint8_t Program_analogSetFilterN(Program_ANALOG_ENUM_typedef idx, uint16_t filterN)
+{
 
     if (programStruct.control.step != step_debug)
     {
@@ -628,14 +636,20 @@ uint8_t Program_analogSetFilterN(Program_ANALOG_ENUM_typedef idx, uint16_t filte
         return 0;
     }
 
-    if(filterN < 1 ) filterN = 1;
-    else if (filterN > 350) filterN = 350;
+    if(filterN < 1 ) 
+    {
+        filterN = 1;
+    }
+    else if (filterN > PROGRAM_ADC_MAX_FILTERN)
+    {
+        filterN = PROGRAM_ADC_MAX_FILTERN;
+    }
     programStruct.setupParam.analog_filter_N[idx] = filterN;
     return 1;
 }
 
-__STATIC_INLINE uint8_t Program_analogInit(){
-
+__STATIC_INLINE uint8_t Program_analogInit()
+{
     for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
     {
         programStruct.analog.aIn[i].bspIdx = -1;
@@ -657,8 +671,8 @@ __STATIC_INLINE uint8_t Program_analogInit(){
     return 1;
 }
 
-void bsp_analogIn_ready_callback(){
-
+void bsp_analogIn_ready_callback()
+{
     uint8_t count = PRG_ANALOG_COUNT;
     uint8_t bspIdx = 0;
     float value = 0.0f;
@@ -667,44 +681,42 @@ void bsp_analogIn_ready_callback(){
     float data = 0.0f;
     float sum = 0.0f;
 
-    asm("NOP");
-
-        for (uint8_t ch = 0; ch < count; ch++)
+    for (uint8_t ch = 0; ch < count; ch++)
+    {
+        if (programStruct.analog.aIn[ch].bspIdx == -1)
         {
-            if (programStruct.analog.aIn[ch].bspIdx == -1 ) 
-            {
-                continue;
-            }
-            bspIdx = programStruct.analog.aIn[ch].bspIdx;
-            data = bsp_analogIn_struct.rawDataUI[bspIdx];
-
-            programStruct.analog.aIn[ch].buf[programStruct.analog.aIn[ch].bufIdx++] = data;
-
-            if (programStruct.analog.aIn[ch].bufIdx == programStruct.analog.aIn[ch].order)
-            {
-                programStruct.analog.aIn[ch].bufIdx = 0;
-            }
-
-            sum = 0.0f;
-            for (uint8_t idx = 0; idx < programStruct.analog.aIn[ch].order; idx++)
-            {
-                sum += programStruct.analog.aIn[ch].buf[idx];
-            }
-
-            programStruct.analog.aIn[ch].valueRaw = (sum/programStruct.analog.aIn[ch].order);
-            value = ( programStruct.analog.aIn[ch].valueRaw  - programStruct.analog.aIn[ch].shift )*programStruct.analog.aIn[ch].kMul;
-            valueLast = programStruct.analog.aIn[ch].valueLast;
-
-            // Формула: Yavg(i) = Yavg(i-1) + a * ( X(i) - Yavg(i-1) );
-            // a = 2/(N + 1) -> Коэффициент фильтра;
-            // N -> количество точек для усреднения, N >= 1;
-            // N = 1 -> фильтр отключен;
-            kFilter = 2.0f/((float)programStruct.analog.aIn[ch].analogFilterN + 1.0f);
-            value = valueLast + kFilter*(value - valueLast);
-
-            programStruct.analog.aIn[ch].value = value;
-            programStruct.analog.aIn[ch].valueLast = value;
+            continue;
         }
+        bspIdx = programStruct.analog.aIn[ch].bspIdx;
+        data = bsp_analogIn_struct.rawDataUI[bspIdx];
+
+        programStruct.analog.aIn[ch].buf[programStruct.analog.aIn[ch].bufIdx++] = data;
+
+        if (programStruct.analog.aIn[ch].bufIdx == programStruct.analog.aIn[ch].order)
+        {
+            programStruct.analog.aIn[ch].bufIdx = 0;
+        }
+
+        sum = 0.0f;
+        for (uint8_t idx = 0; idx < programStruct.analog.aIn[ch].order; idx++)
+        {
+            sum += programStruct.analog.aIn[ch].buf[idx];
+        }
+
+        programStruct.analog.aIn[ch].valueRaw = (sum / programStruct.analog.aIn[ch].order);
+        value = (programStruct.analog.aIn[ch].valueRaw - programStruct.analog.aIn[ch].shift) * programStruct.analog.aIn[ch].kMul;
+        valueLast = programStruct.analog.aIn[ch].valueLast;
+
+        // Формула: Yavg(i) = Yavg(i-1) + a * ( X(i) - Yavg(i-1) );
+        // a = 2/(N + 1) -> Коэффициент фильтра;
+        // N -> количество точек для усреднения, N >= 1;
+        // N = 1 -> фильтр отключен;
+        kFilter = 2.0f / ((float)programStruct.analog.aIn[ch].analogFilterN + 1.0f);
+        value = valueLast + kFilter * (value - valueLast);
+
+        programStruct.analog.aIn[ch].value = value;
+        programStruct.analog.aIn[ch].valueLast = value;
+    }
 }
 //------------   АЦП End  ------------//
 
