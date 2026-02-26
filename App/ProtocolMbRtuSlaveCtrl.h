@@ -4,18 +4,16 @@
 #include "BSP.h"
 #include "ModbusSS.h"
 
-typedef enum{
+typedef enum
+{
     protocol_cmd_debug = 1,
     protocol_cmd_save_param,
     protocol_cmd_reset,
     protocol_cmd_pwmOuts123,
     protocol_cmd_pwmOuts456,
-    protocol_cmd_startStopVodorod,
-    protocol_cmd_startStopZU,
-    protocol_cmd_loadDefaultParam,
-    protocol_cmd_startStopBAT,
-    protocol_cmd_startStop_VD
-}protocolMbRtuSlaveCtrl_control_typedef;
+    protocol_cmd_start_chrge,
+    protocol_cmd_stop_chrge
+} protocolMbRtuSlaveCtrl_control_typedef;
 
 typedef struct
 {

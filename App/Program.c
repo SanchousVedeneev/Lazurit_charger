@@ -167,11 +167,11 @@ void Program_start()
 
     // Загрузка параметров
     Program_ParamSetToDefault();
-     if (Program_ParamLoad() == 0)
-     {
-         // Неудачная попытка
-         asm("NOP");
-     }
+    //  if (Program_ParamLoad() == 0)
+    //  {
+    //      // Неудачная попытка
+    //      asm("NOP");
+    //  }
 
     Program_regulatorInit();
     Program_pwmInit();
@@ -207,32 +207,60 @@ __STATIC_INLINE void Program_fastStop()
 void Program_ParamSetToDefault()
 {
  
+    // Настройка обработки аналоговых датчиков (вписать после калибровки датчиков)
     for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
     {
         programStruct.setupParam.analog_av_order[i] = 10;  // 1 - фильтр отключен
         programStruct.setupParam.analog_filter_N[i] = 100; // 1 - Фильтр отключен
     }
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 1.0f;                  // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_Uzpt] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 0.001f;               
+    programStruct.setupParam.analog_shift[prg_analog_Uzpt] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uout_power_block]  = 1.0f;      // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_Uout_power_block] = 1.0f;      // вписать после калбировки датчиков 
+    programStruct.setupParam.analog_kMul[prg_analog_Uout_power_block]  = 0.001f;    
+    programStruct.setupParam.analog_shift[prg_analog_Uout_power_block] = 1930.0f;   
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 1.0f;                  // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_Uout] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 0.001f;                
+    programStruct.setupParam.analog_shift[prg_analog_Uout] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_I_L3]  = 1.0f;                  // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_I_L3] = 1.0f;                  // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_I_L3]  = 0.001f;                
+    programStruct.setupParam.analog_shift[prg_analog_I_L3] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_I_L4]  = 1.0f;                  // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_I_L4] = 1.0f;                  // вписать после калбировки датчиков 
+    programStruct.setupParam.analog_kMul[prg_analog_I_L4]  = 0.001f;               
+    programStruct.setupParam.analog_shift[prg_analog_I_L4] = 1930.0f;              
 
-    programStruct.setupParam.analog_kMul[prg_analog_Iout1]  = 1.0f;                 // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_Iout1] = 1.0f;                 // вписать после калбировки датчиков          
+    programStruct.setupParam.analog_kMul[prg_analog_Iout1]  = 0.001f;              
+    programStruct.setupParam.analog_shift[prg_analog_Iout1] = 1930.0f;                    
 
-    programStruct.setupParam.analog_kMul[prg_analog_Iout2]  = 1.0f;                 // вписать после калбировки датчиков
-    programStruct.setupParam.analog_shift[prg_analog_Iout2] = 1.0f;                 // вписать после калбировки датчиков
+    programStruct.setupParam.analog_kMul[prg_analog_Iout2]  = 0.001f;                
+    programStruct.setupParam.analog_shift[prg_analog_Iout2] = 1930.0f;              
+
+    // Настройка регуляторов (вписать после наладки преобразователя)
+    programStruct.setupParam.RegU_in     = 450.0f;
+    programStruct.setupParam.RegU_k_Int  = 0.001f;
+    programStruct.setupParam.RegU_k_P    = 0.001f;
+    programStruct.setupParam.RegU_OutMax = 0.001f;
+
+    programStruct.setupParam.RegI_Iout_k_Int  = 0.001f;
+    programStruct.setupParam.RegI_Iout_k_P    = 0.001f;
+    programStruct.setupParam.RegI_Iout_OutMax = 0.001f;
+
+    programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
+    programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
+    programStruct.setupParam.RegI_IL3_OutMax  = 0.001f;
+
+    programStruct.setupParam.RegI_IL4_k_Int   = 0.001f;
+    programStruct.setupParam.RegI_IL4_k_Int   = 0.001f;
+    programStruct.setupParam.RegI_IL4_OutMax  = 0.001f;
+
+    programStruct.setupParam.ZI_Iout_settings = 5.0f;
+
+    // Настройки зарядника
+    programStruct.setupParam.f_PWM = 4000;
+
+    // Настройки проверок на ошибки
+
+
 }
 
 #define PROGRAM_PARAM_SIZE_BYTE sizeof(Program_PARAM_typedef)
@@ -247,7 +275,8 @@ uint8_t Program_ParamSave()
 {
     static uint8_t saveCounter = 0;
 
-    if(++saveCounter >= SAVE_COUNT_MAX_PER_SESSION ){
+    if (++saveCounter >= SAVE_COUNT_MAX_PER_SESSION)
+    {
         return 0;
     }
 
@@ -299,7 +328,7 @@ __INLINE uint8_t Program_set_dout_debug(uint16_t douts)
 }
 
 #define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (250)
-#define PWM_REMOTE_MAX_PERCENT (1000)
+#define PWM_REMOTE_MAX_PERCENT_STEP_DOWN_X10 (1000)
 __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc)
 {
     if (channel_IDx > 5)
@@ -311,9 +340,9 @@ __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc
     {
         if (channel_IDx < 3)
         {
-            if (pwm1000Perc > PWM_REMOTE_MAX_PERCENT)
+            if (pwm1000Perc > PWM_REMOTE_MAX_PERCENT_STEP_DOWN_X10)
             {
-                pwm1000Perc = PWM_REMOTE_MAX_PERCENT;
+                pwm1000Perc = PWM_REMOTE_MAX_PERCENT_STEP_DOWN_X10;
             }  
         }
         else
@@ -327,6 +356,46 @@ __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc
         return 1;
     }
     return 0;
+}
+
+#define PWM_3500HZ (3500)
+#define PWM_4000HZ (4000)
+#define PWM_4200HZ (4200)
+#define PWM_4800HZ (4800)
+#define PWM_5000HZ (5000)
+#define PWM_5600HZ (5600)
+uint8_t Program_set_PWM(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    switch (value)
+    {
+    case PWM_3500HZ:
+        programStruct.setupParam.f_PWM = PWM_3500HZ;
+        break;
+    case PWM_4000HZ:
+        programStruct.setupParam.f_PWM = PWM_4000HZ;
+        break;
+    case PWM_4200HZ:
+        programStruct.setupParam.f_PWM = PWM_4200HZ;
+        break;
+    case PWM_4800HZ:
+        programStruct.setupParam.f_PWM = PWM_4800HZ;
+        break;
+    case PWM_5000HZ:
+        programStruct.setupParam.f_PWM = PWM_5000HZ;
+        break;
+    case PWM_5600HZ:
+        programStruct.setupParam.f_PWM = PWM_5600HZ;
+        break;
+    default:
+        programStruct.setupParam.f_PWM = PWM_4000HZ;
+        break;
+    }
+    return 1;
 }
 
 __INLINE uint8_t Program_GoReset()
@@ -462,24 +531,90 @@ __STATIC_INLINE void Program_pwmOutsControl(bsp_pwm_outs_group_typedef group, ui
 
 __STATIC_INLINE void Program_pwmInit()
 {
-  bsp_pwm_set_tim (bsp_pwm_tim_mode_up_down, 250, BSP_PWM_POSITIVE_POLARITY);
+  bsp_pwm_set_tim (bsp_pwm_tim_mode_up, 200, BSP_PWM_POSITIVE_POLARITY);
 
-  bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4000_hz, 1);
-  bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4000_hz, 1);
+  switch (programStruct.setupParam.f_PWM)
+  {
+  case PWM_3500HZ:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_3500_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_3500_hz, 1);
+    break;
+  case PWM_4000HZ:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4000_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4000_hz, 1);
+    break;
+  case PWM_4200HZ:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4200_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4200_hz, 1);
+    break;
+  case PWM_4800HZ:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4800_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4800_hz, 1);
+    break;
+  case PWM_5000HZ:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_5000_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_5000_hz, 1);
+    break;
+  case PWM_5600HZ:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_5000_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_5000_hz, 1);
+    break;
+  default:
+    bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4000_hz, 1);
+    bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4000_hz, 1);
+    break;
+  }
 
-  SET_PWM_STEP_DOWN (0, 0.0f);
-  SET_PWM_STEP_DOWN (1, 0.0f);
-  SET_PWM_STEP_DOWN (2, 0.0f);
+  SET_PWM_STEP_DOWN(0, 0.0f);
+  SET_PWM_STEP_DOWN(1, 0.0f);
 
-  SET_PWM_STEP_UP (3, 0.0f);
-  SET_PWM_STEP_UP (4, 0.0f);
-  SET_PWM_STEP_UP (5, 0.0f);
+  SET_PWM_STEP_UP(3, 0.0f);
+  SET_PWM_STEP_UP(4, 0.0f);
 
   bsp_pwm_start_IRQ_123_IRQ_456();
 }
 
 __STATIC_INLINE void Program_regulatorInit()
 {
+    // Регулятор напряжения
+    programStruct.control.sau.RegU.In     = programStruct.setupParam.RegU_in;
+    programStruct.control.sau.RegU.k_Int  = programStruct.setupParam.RegU_k_Int;
+    programStruct.control.sau.RegU.k_P    = programStruct.setupParam.RegU_k_P;
+    programStruct.control.sau.RegU.IntMax = programStruct.setupParam.RegU_OutMax;
+    programStruct.control.sau.RegU.IntMin = 0.0f;
+    programStruct.control.sau.RegU.OutMax = programStruct.setupParam.RegU_OutMax;
+    programStruct.control.sau.RegU.OutMin = 0.0f;
+
+    // Регулятор тока Iout
+    programStruct.control.sau.RegI[Iout].k_Int  = programStruct.setupParam.RegI_Iout_k_Int;
+    programStruct.control.sau.RegI[Iout].k_P    = programStruct.setupParam.RegI_Iout_k_P;
+    programStruct.control.sau.RegI[Iout].IntMax = programStruct.setupParam.RegI_Iout_OutMax;
+    programStruct.control.sau.RegI[Iout].IntMin = 0.0f;
+    programStruct.control.sau.RegI[Iout].OutMax = programStruct.setupParam.RegI_Iout_OutMax;
+    programStruct.control.sau.RegI[Iout].OutMin = 0.0f;
+
+    // Регулятор тока IL3
+    programStruct.control.sau.RegI[IL3].k_Int  = programStruct.setupParam.RegI_IL3_k_Int;
+    programStruct.control.sau.RegI[IL3].k_P    = programStruct.setupParam.RegI_IL3_k_P;
+    programStruct.control.sau.RegI[IL3].IntMax = programStruct.setupParam.RegI_IL3_OutMax;
+    programStruct.control.sau.RegI[IL3].IntMin = 0.0f;
+    programStruct.control.sau.RegI[IL3].OutMax = programStruct.setupParam.RegI_IL3_OutMax;
+    programStruct.control.sau.RegI[IL3].OutMin = 0.0f;
+
+    // Регулятор тока IL4
+    programStruct.control.sau.RegI[IL4].k_Int  = programStruct.setupParam.RegI_IL4_k_Int;
+    programStruct.control.sau.RegI[IL4].k_P    = programStruct.setupParam.RegI_IL4_k_P;
+    programStruct.control.sau.RegI[IL4].IntMax = programStruct.setupParam.RegI_IL4_OutMax;
+    programStruct.control.sau.RegI[IL4].IntMin = 0.0f;
+    programStruct.control.sau.RegI[IL4].OutMax = programStruct.setupParam.RegI_IL4_OutMax;
+    programStruct.control.sau.RegI[IL4].OutMin = 0.0f;
+
+    // Задачтик интенсивности 
+    programStruct.control.sau.ZI_Iout.period = 1.0f/(float)programStruct.setupParam.f_PWM;
+    programStruct.control.sau.ZI_Iout.settings = programStruct.setupParam.ZI_Iout_settings;
+    dsp_intensSetterSetup(&programStruct.control.sau.ZI_Iout);
+
+
     asm("Nop");
 }
 

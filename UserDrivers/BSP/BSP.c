@@ -672,12 +672,12 @@ void bsp_pwm_disable_all_outs_VT()
 
 static uint16_t freqArrayArr[] = 
 {
-  24000,    //  bsp_pwm_freq_3500_hz,   // mode_UP 48000  mode_UP_DOWN 24000 
-  21000,    //  bsp_pwm_freq_4000_hz,   // mode_UP 42000  mode_UP_DOWN 21000 
-  20000,    //  bsp_pwm_freq_4200_hz,   // mode_UP 40000  mode_UP_DOWN 20000
-  17500,    //  bsp_pwm_freq_4800_hz,   // mode_UP 35000  mode_UP_DOWN 17500
-  16800,    //  bsp_pwm_freq_5000_hz,   // mode_UP 33600  mode_UP_DOWN 16800
-  15000     //  bsp_pwm_freq_5600_hz    // mode_UP 30000  mode_UP_DOWN 15000
+  48000,    //  bsp_pwm_freq_3500_hz,   // mode_UP 48000  mode_UP_DOWN 24000 
+  42000,    //  bsp_pwm_freq_4000_hz,   // mode_UP 42000  mode_UP_DOWN 21000 
+  40000,    //  bsp_pwm_freq_4200_hz,   // mode_UP 40000  mode_UP_DOWN 20000
+  35000,    //  bsp_pwm_freq_4800_hz,   // mode_UP 35000  mode_UP_DOWN 17500
+  33600,    //  bsp_pwm_freq_5000_hz,   // mode_UP 33600  mode_UP_DOWN 16800
+  30000     //  bsp_pwm_freq_5600_hz    // mode_UP 30000  mode_UP_DOWN 15000
 };
 
 uint8_t bsp_pwm_set_freq(bsp_pwm_outs_group_typedef group, bsp_pwm_freq_typedef freq, uint8_t phaseShift)

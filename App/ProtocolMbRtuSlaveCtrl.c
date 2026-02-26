@@ -57,18 +57,113 @@ ModbusSS_table_t mdb_table_program =
   .type = ModbusSS_Holding
 };
 
+#define MDB_TABLE_REGULATOR_REG_NO (1300)
+enum mdb_table_regulator
+{
+  tab_regul_RegU_k_P = MDB_TABLE_REGULATOR_REG_NO, // 1300
+  tab_regul_RegU_k_Int,                            // 1301
+  tab_regul_RegU_period,                           // 1302
+  tab_regul_RegU_In,                               // 1303
+  tab_regul_RegU_Fb,                               // 1304
+  tab_regul_RegU_d,                                // 1305
+  tab_regul_RegU_Out,                              // 1306
+  tab_regul_RegU_Int,                              // 1307
+  tab_regul_RegU_P,                                // 1308
+  tab_regul_RegU_OutMax,                           // 1309
+  tab_regul_RegU_OutMin,                           // 1310
+  tab_regul_RegU_IntMax,                           // 1311
+  tab_regul_RegU_IntMin,                           // 1312
+
+  tab_regul_RegI_Iout_k_P,                         // 1313
+  tab_regul_RegI_Iout_k_Int,                       // 1314
+  tab_regul_RegI_Iout_period,                      // 1315
+  tab_regul_RegI_Iout_In,                          // 1316
+  tab_regul_RegI_Iout_Fb,                          // 1317
+  tab_regul_RegI_Iout_d,                           // 1318
+  tab_regul_RegI_Iout_Out,                         // 1319
+  tab_regul_RegI_Iout_Int,                         // 1320
+  tab_regul_RegI_Iout_P,                           // 1321
+  tab_regul_RegI_Iout_OutMax,                      // 1322
+  tab_regul_RegI_Iout_OutMin,                      // 1323
+  tab_regul_RegI_Iout_IntMax,                      // 1324
+  tab_regul_RegI_Iout_IntMin,                      // 1325
+
+  tab_regul_RegI_IL3_k_P,                          // 1326
+  tab_regul_RegI_IL3_k_Int,                        // 1327
+  tab_regul_RegI_IL3_period,                       // 1328
+  tab_regul_RegI_IL3_In,                           // 1329
+  tab_regul_RegI_IL3_Fb,                           // 1330
+  tab_regul_RegI_IL3_d,                            // 1331
+  tab_regul_RegI_IL3_Out,                          // 1332
+  tab_regul_RegI_IL3_Int,                          // 1333
+  tab_regul_RegI_IL3_P,                            // 1334
+  tab_regul_RegI_IL3_OutMax,                       // 1335
+  tab_regul_RegI_IL3_OutMin,                       // 1336
+  tab_regul_RegI_IL3_IntMax,                       // 1337
+  tab_regul_RegI_IL3_IntMin,                       // 1338
+
+  tab_regul_RegI_IL4_k_P,                          // 1339
+  tab_regul_RegI_IL4_k_Int,                        // 1340
+  tab_regul_RegI_IL4_period,                       // 1341
+  tab_regul_RegI_IL4_In,                           // 1342
+  tab_regul_RegI_IL4_Fb,                           // 1343
+  tab_regul_RegI_IL4_d,                            // 1344
+  tab_regul_RegI_IL4_Out,                          // 1345
+  tab_regul_RegI_IL4_Int,                          // 1346
+  tab_regul_RegI_IL4_P,                            // 1347
+  tab_regul_RegI_IL4_OutMax,                       // 1348
+  tab_regul_RegI_IL4_OutMin,                       // 1349
+  tab_regul_RegI_IL4_IntMax,                       // 1350
+  tab_regul_RegI_IL4_IntMin,                       // 1351
+
+  tab_regul_ZI_Iout_in,                            // 1352
+  tab_regul_ZI_Iout_step,                          // 1353
+  tab_regul_ZI_Iout_out,                           // 1354
+  tab_regul_ZI_Iout_period,                        // 1355
+  tab_regul_ZI_Iout_settings                       // 1356
+
+};
+#define MDB_REGULATOR_BUF_COUNT (tab_regul_ZI_Iout_settings - MDB_TABLE_REGULATOR_REG_NO + 1)
+uint16_t mdb_regulator_buf[MDB_REGULATOR_BUF_COUNT];
+ModbusSS_table_t mdb_table_regulator = 
+{
+  .buf = (uint8_t *)mdb_regulator_buf,
+  .quantity = MDB_REGULATOR_BUF_COUNT,
+  .regNo = MDB_TABLE_REGULATOR_REG_NO,
+  .type = ModbusSS_Holding
+};
+
 //---1400
 #define MDB_TABLE_PARAM_REG_NO (1400)
 enum mdb_table_param
 {
-  tab_param_analog_shift_1_7    = MDB_TABLE_PARAM_REG_NO,                           // 1400 ... 1406
-  tab_param_analog_kMul_1_7     = tab_param_analog_shift_1_7 + PRG_ANALOG_COUNT,    // 1407 ... 1413
-  tab_param_analog_av_order_1_7 = tab_param_analog_kMul_1_7 + PRG_ANALOG_COUNT,     // 1414 ... 1420
-  tab_param_analog_filter_N_1_7 = tab_param_analog_av_order_1_7 + PRG_ANALOG_COUNT, // 1421 ... 1427
-
+  tab_param_analog_shift_1_7    = MDB_TABLE_PARAM_REG_NO,                            // 1400 ... 1406
+  tab_param_analog_kMul_1_7     = tab_param_analog_shift_1_7 + PRG_ANALOG_COUNT,     // 1407 ... 1413
+  tab_param_analog_av_order_1_7 = tab_param_analog_kMul_1_7 + PRG_ANALOG_COUNT,      // 1414 ... 1420
+  tab_param_analog_filter_N_1_7 = tab_param_analog_av_order_1_7 + PRG_ANALOG_COUNT,  // 1421 ... 1427
   tab_param_protect_control     =  tab_param_analog_filter_N_1_7 + PRG_ANALOG_COUNT, // 1428
+  tab_param_f_PWM,                                                                   // 1429
+
+  tab_param_RegU_in,            // 1430
+  tab_param_RegU_k_Int,         // 1431
+  tab_param_RegU_k_P,           // 1432
+  tab_param_RegU_OutMax,        // 1432
+
+  tab_param_RegI_Iout_k_Int,    // 1434
+  tab_param_RegI_Iout_k_P,      // 1435
+  tab_param_RegI_Iout_OutMax,   // 1436
+
+  tab_param_RegI_IL3_k_Int,     // 1437
+  tab_param_RegI_IL3_k_P,       // 1438
+  tab_param_RegI_IL3_OutMax,    // 1439
+
+  tab_param_RegI_IL4_k_Int,     // 1440
+  tab_param_RegI_IL4_k_P,       // 1441
+  tab_param_RegI_IL4_OutMax,    // 1442
+
+  tab_param_ZI_Iout_settings    // 1442
 };
-#define MDB_PARAM_BUF_COUNT (tab_param_protect_control - tab_param_analog_shift_1_7 + 1)
+#define MDB_PARAM_BUF_COUNT (tab_param_ZI_Iout_settings - tab_param_analog_shift_1_7 + 1)
 uint16_t mdb_param_buf[MDB_PARAM_BUF_COUNT];
 ModbusSS_table_t mdb_table_param = 
 {
@@ -83,6 +178,7 @@ ModbusSS_table_t mdb_table_param =
 ModbusSS_table_t *modbusTables[] = {
     &mdb_table_bsp,
     &mdb_table_program,
+    &mdb_table_regulator,
     &mdb_table_param
 };
 //--------------------  TABLES ARRAY END---------------------//
@@ -95,7 +191,7 @@ ModbusSS_t modbusSS_rtu_rs485 = {
     .bufRxTx = modbusBufRxTxRtu485,
     .slaveId = 1,
     .tables = modbusTables,
-    .tablesCount = 3
+    .tablesCount = 4
 };
 
 protocolMbRtuSlaveCtrl_typedef modbusRtu_ctrlStruct; // protocol control struct
@@ -118,10 +214,10 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
 {
   // BSP -----------------------------//
   uint16_t regNo = 0;
-  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_din,         bsp_dInOut_struct.in.w16);        // 1000
-  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout_led_w1, bsp_dInOut_struct.out.w16[0]);    // 1001
-  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout_led_w2, bsp_dInOut_struct.out.w16[1]);    // 1001
-  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout,        bsp_dInOut_struct.out.w16[2]);    // 1002
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_din,         bsp_dInOut_struct.in.w16);        
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout_led_w1, bsp_dInOut_struct.out.w16[0]);    
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout_led_w2, bsp_dInOut_struct.out.w16[1]);    
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_dout,        bsp_dInOut_struct.out.w16[2]);    
 
   regNo = tab_bsp_analog;
   for (uint8_t i = 0; i < 12; i++)
@@ -129,43 +225,106 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
     ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.rawDataUI[i]);          // 1005 - 1016
   }
 
-  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_getTemp(1));              // 1017
-  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_getTemp(2));              // 1018
-  // ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.currentTemp[0]);       // 1017
-  // ModbusSS_SetWord(&mdb_table_bsp, regNo,   bsp_analogIn_struct.currentTemp[1]);       // 1018
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_getTemp(1));              
+  ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_getTemp(2));              
+  // ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.currentTemp[0]);       
+  // ModbusSS_SetWord(&mdb_table_bsp, regNo,   bsp_analogIn_struct.currentTemp[1]);       
   // BSP END-----------------------------//
 
   // PROGRAM -----------------------------//
   // ModbusSS_SetWord(&mdb_table_program, tab_prg_cmd, modbusRtu_ctrlStruct.cmd);        // 1200
   // ModbusSS_SetWord(&mdb_table_program, tab_prg_param, modbusRtu_ctrlStruct.param);    // 1201
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_target, programStruct.control.target);            // 1202
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_step, programStruct.control.step);                // 1203
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_ecode, programStruct.control.errorCode);          // 1204
-  ModbusSS_SetWord(&mdb_table_program, tab_prg_flashCounter, programStruct.sys.flash_counter);   // 1205
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_target, programStruct.control.target);            
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_step, programStruct.control.step);                
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_ecode, programStruct.control.errorCode);          
+  ModbusSS_SetWord(&mdb_table_program, tab_prg_flashCounter, programStruct.sys.flash_counter);   
   
   uint16_t analogStartIdx = tab_prg_analogVal_Uzpt;
   uint16_t analogStopIdx  = tab_prg_analogVal_Iout2;
 
   for (uint8_t i = 0; i < (analogStopIdx - analogStartIdx + 1); i++)
   {
-    ModbusSS_SetWord(&mdb_table_program, analogStartIdx + i, (int16_t)Program_analogGetByIdx(i)->value);    // 1206 ... 1212
+    ModbusSS_SetWord(&mdb_table_program, analogStartIdx + i, (int16_t)Program_analogGetByIdx(i)->value);
   }
   
   for (uint8_t i = 0; i < 6; i++)
   {
-    ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1_6 + i, programStruct.control.remote.pwmArray[i]);     // 1213 ... 1218
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1_6 + i, programStruct.control.remote.pwmArray[i]);
   }
  
-    // PARAM -----------------------------//
-  //-----Analog param
+  // REGULATOR -----------------------------//
+  float k_1000 = 1000.0f;
+  float k_100000 = 100000.0f;
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_k_P,        programStruct.control.sau.RegU.k_P*k_1000); 
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_k_Int,      programStruct.control.sau.RegU.k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_period,     programStruct.control.sau.RegU.period*k_100000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_In,         programStruct.control.sau.RegU.In);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_Fb,         programStruct.control.sau.RegU.Fb);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_d, (int16_t)programStruct.control.sau.RegU.d);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_Out,        programStruct.control.sau.RegU.Out);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_Int,        programStruct.control.sau.RegU.Int);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_P, (int16_t)programStruct.control.sau.RegU.P);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_OutMax,     programStruct.control.sau.RegU.OutMax);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_OutMin,     programStruct.control.sau.RegU.OutMin);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_IntMax,     programStruct.control.sau.RegU.IntMax);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegU_IntMin,     programStruct.control.sau.RegU.IntMin);
+
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_k_P,        programStruct.control.sau.RegI[Iout].k_P*k_1000); 
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_k_Int,      programStruct.control.sau.RegI[Iout].k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_period,     programStruct.control.sau.RegI[Iout].period*k_100000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_In,         programStruct.control.sau.RegI[Iout].In);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_Fb,         programStruct.control.sau.RegI[Iout].Fb);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_d, (int16_t)programStruct.control.sau.RegI[Iout].d);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_Out,        programStruct.control.sau.RegI[Iout].Out);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_Int,        programStruct.control.sau.RegI[Iout].Int);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_P, (int16_t)programStruct.control.sau.RegI[Iout].P);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_OutMax,     programStruct.control.sau.RegI[Iout].OutMax);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_OutMin,     programStruct.control.sau.RegI[Iout].OutMin);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_IntMax,     programStruct.control.sau.RegI[Iout].IntMax);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_Iout_IntMin,     programStruct.control.sau.RegI[Iout].IntMin);
+
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_k_P,        programStruct.control.sau.RegI[IL3].k_P*k_1000); 
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_k_Int,      programStruct.control.sau.RegI[IL3].k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_period,     programStruct.control.sau.RegI[IL3].period*k_100000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_In,         programStruct.control.sau.RegI[IL3].In);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Fb,         programStruct.control.sau.RegI[IL3].Fb);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_d, (int16_t)programStruct.control.sau.RegI[IL3].d);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Out,        programStruct.control.sau.RegI[IL3].Out*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Int,        programStruct.control.sau.RegI[IL3].Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_P, (int16_t)programStruct.control.sau.RegI[IL3].P*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_OutMax,     programStruct.control.sau.RegI[IL3].OutMax*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_OutMin,     programStruct.control.sau.RegI[IL3].OutMin*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_IntMax,     programStruct.control.sau.RegI[IL3].IntMax*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_IntMin,     programStruct.control.sau.RegI[IL3].IntMin*k_1000);
+
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_k_P,        programStruct.control.sau.RegI[IL4].k_P*k_1000); 
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_k_Int,      programStruct.control.sau.RegI[IL4].k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_period,     programStruct.control.sau.RegI[IL4].period*k_100000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_In,         programStruct.control.sau.RegI[IL4].In);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Fb,         programStruct.control.sau.RegI[IL4].Fb);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_d, (int16_t)programStruct.control.sau.RegI[IL4].d);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Out,        programStruct.control.sau.RegI[IL4].Out*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Int,        programStruct.control.sau.RegI[IL4].Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_P, (int16_t)programStruct.control.sau.RegI[IL4].P*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_OutMax,     programStruct.control.sau.RegI[IL4].OutMax*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_OutMin,     programStruct.control.sau.RegI[IL4].OutMin*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_IntMax,     programStruct.control.sau.RegI[IL4].IntMax*k_1000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_IntMin,     programStruct.control.sau.RegI[IL4].IntMin*k_1000);
+
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_in,          programStruct.control.sau.ZI_Iout.in);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_step,        programStruct.control.sau.ZI_Iout.step*k_100000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_out,         programStruct.control.sau.ZI_Iout.out);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_period,      programStruct.control.sau.ZI_Iout.period*k_100000);
+  ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_period,      programStruct.control.sau.ZI_Iout.settings);
+
+  // PARAM -----------------------------//
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
     ModbusSS_SetWord(&mdb_table_param, tab_param_analog_shift_1_7 + i, programStruct.setupParam.analog_shift[i]);
   }
-  float analog_kMul = 100000.0f;
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
-    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, (int16_t)(programStruct.setupParam.analog_kMul[i] * analog_kMul));
+    ModbusSS_SetWord(&mdb_table_param, tab_param_analog_kMul_1_7 + i, (int16_t)(programStruct.setupParam.analog_kMul[i]*k_100000));
   }
   for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
   {
@@ -175,6 +334,29 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
   {
     ModbusSS_SetWord(&mdb_table_param, tab_param_analog_filter_N_1_7 + i, programStruct.setupParam.analog_filter_N[i]);
   }
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_protect_control,  programStruct.setupParam.protect_control);
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_f_PWM,            programStruct.setupParam.f_PWM);
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_in,          programStruct.setupParam.RegU_in);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_k_Int,       programStruct.setupParam.RegU_k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_k_P,         programStruct.setupParam.RegU_k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_OutMax,      programStruct.setupParam.RegU_OutMax);
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_Iout_k_Int,  programStruct.setupParam.RegI_Iout_k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_Iout_k_P,    programStruct.setupParam.RegI_Iout_k_P*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_Iout_OutMax, programStruct.setupParam.RegI_Iout_OutMax);
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_k_Int,   programStruct.setupParam.RegI_IL3_k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_k_P,     programStruct.setupParam.RegI_IL3_k_P*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_OutMax,  programStruct.setupParam.RegI_IL3_OutMax*k_1000);
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_k_Int,   programStruct.setupParam.RegI_IL4_k_Int*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_k_P,     programStruct.setupParam.RegI_IL4_k_P*k_1000);
+  ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_OutMax,  programStruct.setupParam.RegI_IL4_OutMax*k_1000);
+
+  ModbusSS_SetWord(&mdb_table_param, tab_param_ZI_Iout_settings, programStruct.setupParam.ZI_Iout_settings);
 }
 //------------------------ REGULAR FCN END------------------------
 
@@ -187,7 +369,8 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
   uint16_t param = 0;
   uint8_t idx = 0;
   int16_t sign_val = 0;
-  float analog_kMul = 0.000001;
+  float analog_kMul = 0.00001;
+  float k_x001 = 0.001;
   float value = 0.0f;
   asm("NOP");
 
@@ -249,12 +432,7 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
         }
       }
       break;
-    case tab_prg_pwm1_6:
-    case tab_prg_pwm1_6 + 1:
-    case tab_prg_pwm1_6 + 2:
-    case tab_prg_pwm1_6 + 3:
-    case tab_prg_pwm1_6 + 4:
-    case tab_prg_pwm1_6 + 5:
+    case tab_prg_pwm1_6 ... tab_prg_pwm1_6 + 5:
       if (Program_set_pwm_debug(reg - tab_prg_pwm1_6, ModbusSS_GetWord(&mdb_table_program, reg)))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
@@ -315,7 +493,73 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       }
       break;
     case tab_param_protect_control:
-      programStruct.setupParam.protect_control = (uint32_t)value;
+      programStruct.setupParam.protect_control = value;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_f_PWM:
+      if (Program_set_PWM(value))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
+      break;
+    case tab_param_RegU_in:
+      programStruct.setupParam.RegU_in = value;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegU_k_Int:
+      programStruct.setupParam.RegU_k_Int = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegU_k_P:
+      programStruct.setupParam.RegU_k_P = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegU_OutMax:
+      programStruct.setupParam.RegU_OutMax = value;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_Iout_k_Int:
+      programStruct.setupParam.RegI_Iout_k_Int = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_Iout_k_P:
+      programStruct.setupParam.RegI_Iout_k_P = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_Iout_OutMax:
+      programStruct.setupParam.RegI_Iout_OutMax = value;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_IL3_k_Int:
+      programStruct.setupParam.RegI_IL3_k_Int = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_IL3_k_P:
+      programStruct.setupParam.RegI_IL3_k_P = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_IL3_OutMax:
+      programStruct.setupParam.RegI_IL3_OutMax = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_IL4_k_Int:
+      programStruct.setupParam.RegI_IL4_k_Int = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_IL4_k_P:
+      programStruct.setupParam.RegI_IL4_k_P = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_RegI_IL4_OutMax:
+      programStruct.setupParam.RegI_IL4_OutMax = value*k_x001;
+      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      break;
+    case tab_param_ZI_Iout_settings:
+      programStruct.setupParam.ZI_Iout_settings = value;
       response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       break;
     }

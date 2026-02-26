@@ -58,11 +58,9 @@ void dsp_regulatorReset(dsp_regulator_typedef *r)
   r->Out = r->OutMin;
 }
 
-void dsp_intensSetterSetup(dsp_intensSetter_typedef* intens, float setting, float period)
+void dsp_intensSetterSetup(dsp_intensSetter_typedef* intens)
 {
-  intens->settings = setting;
-  intens->period = period;
-  intens->step = setting*period;
+  intens->step = intens->settings * intens->period;
 }
 
 void dsp_intensSetterUpProcess(dsp_intensSetter_typedef* intens)

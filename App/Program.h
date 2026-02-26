@@ -7,28 +7,31 @@
 #include "BSP.h"
 
 //Steps
-typedef enum{
+typedef enum
+{
     step_waitInit = 0,
     step_init,
     step_debug,
     step_reset,
     step_error,
     step_wait_op
-}Program_STEP_typedef;
+} Program_STEP_typedef;
 
 //Targets
-typedef enum{
+typedef enum
+{
     target_debug = 1,
     target_waitOp,
     target_reset,
     target_error
-}Program_TARGET_typedef;
+} Program_TARGET_typedef;
 
 //Errors
-typedef enum{
+typedef enum
+{
     error_noError = 0,
     error_fastStop,
-}Program_ERROR_typedef;
+} Program_ERROR_typedef;
 
 typedef enum
 {
@@ -86,16 +89,23 @@ typedef struct
     uint16_t pwmArray[6];
     uint8_t pwmEnable123;
     uint8_t pwmEnable456;
-}Program_REMOTE_typedef;
+} Program_REMOTE_typedef;
 
+
+typedef enum
+{
+	IL3 = 0,
+    IL4,
+    Iout
+} Program_RegI_typedef;
 
 typedef struct
 {
-    uint8_t vodorodStart;
-    dsp_regulator_typedef vodorod_RegI[3];
-    dsp_regulator_typedef vodorod_RegU;
-    dsp_intensSetter_typedef vodorod_ZI;
-}Program_SAU_typedef;
+    uint8_t chargerStart;
+    dsp_regulator_typedef RegI[3];
+    dsp_regulator_typedef RegU;
+    dsp_intensSetter_typedef ZI_Iout;
+} Program_SAU_typedef;
 
 #define PROGRAM_ADC_MAX_FILTER_ORDER (16)
 #define PROGRAM_ADC_MAX_FILTERN (250)
@@ -111,9 +121,10 @@ typedef struct
        uint8_t order;
        uint16_t analogFilterN;
        int8_t bspIdx;
-}Program_AIN_typedef;
+} Program_AIN_typedef;
 
-typedef enum{
+typedef enum
+{
     prg_analog_Uzpt,
     prg_analog_Uout_power_block,
     prg_analog_Uout,
@@ -121,14 +132,14 @@ typedef enum{
     prg_analog_I_L4,
     prg_analog_Iout1,
     prg_analog_Iout2
-}Program_ANALOG_ENUM_typedef;
+} Program_ANALOG_ENUM_typedef;
 
 #define PRG_ANALOG_COUNT (prg_analog_Iout2 + 1)
 
 typedef struct
 {
     Program_AIN_typedef aIn[PRG_ANALOG_COUNT];
-}Program_ANALOG_typedef;
+} Program_ANALOG_typedef;
 
 typedef struct
 {
@@ -137,12 +148,12 @@ typedef struct
     Program_ERROR_typedef errorCode;
     Program_REMOTE_typedef remote;
     Program_SAU_typedef sau;
-}Program_CONTROL_typedef;
+} Program_CONTROL_typedef;
 
 typedef struct
 {
-       int16_t flash_counter;
-}Program_SYS_typedef;
+    int16_t flash_counter;
+} Program_SYS_typedef;
 
 /*
     Структура сохраняется во Flash память 
@@ -151,13 +162,34 @@ typedef struct
 */
 typedef struct
 {
-    uint16_t analog_shift[PRG_ANALOG_COUNT];    //+
-    float analog_kMul[PRG_ANALOG_COUNT];        //+
-    uint8_t analog_av_order[PRG_ANALOG_COUNT];  //+
-    uint16_t analog_filter_N[PRG_ANALOG_COUNT]; //+
+    uint16_t analog_shift[PRG_ANALOG_COUNT];   
+    float analog_kMul[PRG_ANALOG_COUNT];      
+    uint8_t analog_av_order[PRG_ANALOG_COUNT]; 
+    uint16_t analog_filter_N[PRG_ANALOG_COUNT];
+    uint16_t protect_control;
 
-    uint16_t protect_control; // по умолчанию =0
-}Program_PARAM_typedef;
+    uint16_t f_PWM;
+
+    float RegU_in;
+    float RegU_k_Int;
+    float RegU_k_P;
+    float RegU_OutMax;
+
+    float RegI_Iout_k_Int;
+    float RegI_Iout_k_P;
+    float RegI_Iout_OutMax;
+
+    float RegI_IL3_k_Int;
+    float RegI_IL3_k_P;
+    float RegI_IL3_OutMax;
+    
+    float RegI_IL4_k_Int;
+    float RegI_IL4_k_P;
+    float RegI_IL4_OutMax;
+
+    float ZI_Iout_settings;
+
+} Program_PARAM_typedef;
 
 
 #define PAN_MDB_STATE_OK (1)
@@ -166,7 +198,7 @@ typedef struct
 {
     uint8_t mdb_rx;
     uint8_t mdb_state;
-}Panel_Param_typedef;
+} Panel_Param_typedef;
 
 
 typedef struct
@@ -176,7 +208,7 @@ typedef struct
     Program_SYS_typedef sys;
     Program_ANALOG_typedef analog;
     Panel_Param_typedef PanParam;
-}Program_typedef;
+} Program_typedef;
 
 void Program_start();
 
@@ -200,6 +232,8 @@ uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOf
 uint8_t Program_LoadDefaultParam_debug();
 
 uint8_t Program_GoReset();
+
+uint8_t Program_set_PWM(uint16_t value);
 
 #define setBit(reg, bit)   (reg |=  (1 << bit))
 #define resetBit(reg, bit) (reg &= ~(1 << bit))

@@ -34,7 +34,7 @@ typedef struct
     float settings;
 } dsp_intensSetter_typedef;
 
-void dsp_intensSetterSetup(dsp_intensSetter_typedef* intens, float setting, float period);
+void dsp_intensSetterSetup(dsp_intensSetter_typedef* intens);
 void dsp_intensSetterUpProcess(dsp_intensSetter_typedef* intens);
 void dsp_intensSetterReset(dsp_intensSetter_typedef* intens);
 
