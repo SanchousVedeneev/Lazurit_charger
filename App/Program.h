@@ -30,7 +30,18 @@ typedef enum
 typedef enum
 {
     error_noError = 0,
-    error_fastStop,
+    error_link_panel,
+    error_Uzpt_low,
+    error_Uzpt_high,
+    error_IL3_high,
+    error_IL4_high,
+    error_Iout1_high,
+    error_Iout2_high,
+    error_Iout_high,
+    error_Uout_high,
+    error_akb_no,
+    error_akb_U_high,
+    error_akb_fault_polarity
 } Program_ERROR_typedef;
 
 typedef enum
@@ -128,8 +139,8 @@ typedef enum
     prg_analog_Uzpt,
     prg_analog_Uout_power_block,
     prg_analog_Uout,
-    prg_analog_I_L3,
-    prg_analog_I_L4,
+    prg_analog_IL3,
+    prg_analog_IL4,
     prg_analog_Iout1,
     prg_analog_Iout2
 } Program_ANALOG_ENUM_typedef;
@@ -189,8 +200,16 @@ typedef struct
 
     float ZI_Iout_settings;
 
+    float check_Uzpt_low;
+    float check_Uzpt_high;
+    float check_IL3_high;
+    float check_IL4_high;
+    float check_Iout1_high;
+    float check_Iout2_high;
+    float check_Uout_high;
+    float check_Uakb_no;
+    float check_Uakb_high;
 } Program_PARAM_typedef;
-
 
 #define PAN_MDB_STATE_OK (1)
 #define PAN_MDB_STATE_ERR (0)
@@ -199,7 +218,6 @@ typedef struct
     uint8_t mdb_rx;
     uint8_t mdb_state;
 } Panel_Param_typedef;
-
 
 typedef struct
 {
@@ -234,6 +252,35 @@ uint8_t Program_LoadDefaultParam_debug();
 uint8_t Program_GoReset();
 
 uint8_t Program_set_PWM(uint16_t value);
+
+uint8_t Program_setup_RegU_in(uint16_t value);
+uint8_t Program_setup_RegU_k_Int(float value);
+uint8_t Program_setup_RegU_k_P(float value);
+uint8_t Program_setup_RegU_OutMax(uint16_t value);
+
+uint8_t Program_setup_RegI_Iout_k_Int(float value);
+uint8_t Program_setup_RegI_Iout_k_P(float value);
+uint8_t Program_setup_RegI_Iout_OutMax(uint16_t value);
+
+uint8_t Program_setup_RegI_IL3_k_Int(float value);
+uint8_t Program_setup_RegI_IL3_k_P(float value);
+uint8_t Program_setup_RegI_IL3_OutMax(uint16_t value);
+
+uint8_t Program_setup_RegI_IL4_k_Int(float value);
+uint8_t Program_setup_RegI_IL4_k_P(float value);
+uint8_t Program_setup_RegI_IL4_OutMax(uint16_t value);
+
+uint8_t Program_setup_ZI_Iout_settings(uint16_t value);
+
+uint8_t Program_check_Uzpt_low(uint16_t value);
+uint8_t Program_check_Uzpt_high(uint16_t value);
+uint8_t Program_check_IL3_high(uint16_t value);
+uint8_t Program_check_IL4_high(uint16_t value);
+uint8_t Program_check_Iout1_high(uint16_t value);
+uint8_t Program_check_Iout2_high(uint16_t value);
+uint8_t Program_check_Uout_high(uint16_t value);
+uint8_t Program_check_Uakb_no(uint16_t value);
+uint8_t Program_check_Uakb_high(uint16_t value);
 
 #define setBit(reg, bit)   (reg |=  (1 << bit))
 #define resetBit(reg, bit) (reg &= ~(1 << bit))

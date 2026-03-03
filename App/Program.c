@@ -167,14 +167,14 @@ void Program_start()
 
     // Загрузка параметров
     Program_ParamSetToDefault();
-    //  if (Program_ParamLoad() == 0)
-    //  {
-    //      // Неудачная попытка
-    //      asm("NOP");
-    //  }
+     if (Program_ParamLoad() == 0)
+     {
+         // Неудачная попытка
+         asm("NOP");
+     }
 
-    Program_regulatorInit();
     Program_pwmInit();
+    Program_regulatorInit();
     Program_analogInit();
 
     bsp_sys_tick1k_start();
@@ -210,8 +210,8 @@ void Program_ParamSetToDefault()
     // Настройка обработки аналоговых датчиков (вписать после калибровки датчиков)
     for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
     {
-        programStruct.setupParam.analog_av_order[i] = 10;  // 1 - фильтр отключен
-        programStruct.setupParam.analog_filter_N[i] = 100; // 1 - Фильтр отключен
+        programStruct.setupParam.analog_av_order[i] = 8;  // 1 - фильтр отключен
+        programStruct.setupParam.analog_filter_N[i] = 200; // 1 - Фильтр отключен
     }
 
     programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 0.001f;               
@@ -223,11 +223,11 @@ void Program_ParamSetToDefault()
     programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 0.001f;                
     programStruct.setupParam.analog_shift[prg_analog_Uout] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_I_L3]  = 0.001f;                
-    programStruct.setupParam.analog_shift[prg_analog_I_L3] = 1930.0f;               
+    programStruct.setupParam.analog_kMul[prg_analog_IL3]   = 0.001f;                
+    programStruct.setupParam.analog_shift[prg_analog_IL3]  = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_I_L4]  = 0.001f;               
-    programStruct.setupParam.analog_shift[prg_analog_I_L4] = 1930.0f;              
+    programStruct.setupParam.analog_kMul[prg_analog_IL4]   = 0.001f;               
+    programStruct.setupParam.analog_shift[prg_analog_IL4]  = 1930.0f;              
 
     programStruct.setupParam.analog_kMul[prg_analog_Iout1]  = 0.001f;              
     programStruct.setupParam.analog_shift[prg_analog_Iout1] = 1930.0f;                    
@@ -246,11 +246,11 @@ void Program_ParamSetToDefault()
     programStruct.setupParam.RegI_Iout_OutMax = 0.001f;
 
     programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
-    programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
+    programStruct.setupParam.RegI_IL3_k_P     = 0.001f;
     programStruct.setupParam.RegI_IL3_OutMax  = 0.001f;
 
     programStruct.setupParam.RegI_IL4_k_Int   = 0.001f;
-    programStruct.setupParam.RegI_IL4_k_Int   = 0.001f;
+    programStruct.setupParam.RegI_IL4_k_P     = 0.001f;
     programStruct.setupParam.RegI_IL4_OutMax  = 0.001f;
 
     programStruct.setupParam.ZI_Iout_settings = 5.0f;
@@ -259,8 +259,15 @@ void Program_ParamSetToDefault()
     programStruct.setupParam.f_PWM = 4000;
 
     // Настройки проверок на ошибки
-
-
+    programStruct.setupParam.check_Uzpt_low   = 470.0f;
+    programStruct.setupParam.check_Uzpt_high  = 630.0f;
+    programStruct.setupParam.check_IL3_high   = 140.0f;
+    programStruct.setupParam.check_IL4_high   = 140.0f;
+    programStruct.setupParam.check_Iout1_high = 140.0f;
+    programStruct.setupParam.check_Iout2_high = 140.0f;
+    programStruct.setupParam.check_Uout_high  = 720.0f;
+    programStruct.setupParam.check_Uakb_no    = 300.0f;
+    programStruct.setupParam.check_Uakb_no    = 690.0f;
 }
 
 #define PROGRAM_PARAM_SIZE_BYTE sizeof(Program_PARAM_typedef)
@@ -358,12 +365,12 @@ __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc
     return 0;
 }
 
-#define PWM_3500HZ (3500)
-#define PWM_4000HZ (4000)
-#define PWM_4200HZ (4200)
-#define PWM_4800HZ (4800)
-#define PWM_5000HZ (5000)
-#define PWM_5600HZ (5600)
+#define PROGRAM_SETUP_PWM_3500HZ (3500)
+#define PROGRAM_SETUP_PWM_4000HZ (4000)
+#define PROGRAM_SETUP_PWM_4200HZ (4200)
+#define PROGRAM_SETUP_PWM_4800HZ (4800)
+#define PROGRAM_SETUP_PWM_5000HZ (5000)
+#define PROGRAM_SETUP_PWM_5600HZ (5600)
 uint8_t Program_set_PWM(uint16_t value)
 {
     if (programStruct.control.step != step_debug)
@@ -373,28 +380,497 @@ uint8_t Program_set_PWM(uint16_t value)
 
     switch (value)
     {
-    case PWM_3500HZ:
-        programStruct.setupParam.f_PWM = PWM_3500HZ;
+    case PROGRAM_SETUP_PWM_3500HZ:
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_3500HZ;
         break;
-    case PWM_4000HZ:
-        programStruct.setupParam.f_PWM = PWM_4000HZ;
+    case PROGRAM_SETUP_PWM_4000HZ:
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_4000HZ;
         break;
-    case PWM_4200HZ:
-        programStruct.setupParam.f_PWM = PWM_4200HZ;
+    case PROGRAM_SETUP_PWM_4200HZ:
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_4200HZ;
         break;
-    case PWM_4800HZ:
-        programStruct.setupParam.f_PWM = PWM_4800HZ;
+    case PROGRAM_SETUP_PWM_4800HZ:
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_4800HZ;
         break;
-    case PWM_5000HZ:
-        programStruct.setupParam.f_PWM = PWM_5000HZ;
+    case PROGRAM_SETUP_PWM_5000HZ:
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_5000HZ;
         break;
-    case PWM_5600HZ:
-        programStruct.setupParam.f_PWM = PWM_5600HZ;
+    case PROGRAM_SETUP_PWM_5600HZ:
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_5600HZ;
         break;
     default:
-        programStruct.setupParam.f_PWM = PWM_4000HZ;
+        programStruct.setupParam.f_PWM = PROGRAM_SETUP_PWM_4000HZ;
         break;
     }
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGU_IN_MIN (100) // для отладки (после отладки повысить до 420)
+#define PROGRAM_SETUP_REGU_IN_MAX (690)
+uint8_t Program_setup_RegU_in(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGU_IN_MIN)
+    {
+        value = PROGRAM_SETUP_REGU_IN_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGU_IN_MAX)
+    {
+        value = PROGRAM_SETUP_REGU_IN_MAX;
+    }
+    programStruct.setupParam.RegU_in = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGU_K_INT_MIN (0.001f)
+#define PROGRAM_SETUP_REGU_K_INT_MAX (20.0f)
+uint8_t Program_setup_RegU_k_Int(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGU_K_INT_MIN)
+    {
+        value = PROGRAM_SETUP_REGU_K_INT_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGU_K_INT_MAX)
+    {
+        value = PROGRAM_SETUP_REGU_K_INT_MAX;
+    }
+    programStruct.setupParam.RegU_k_Int = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGU_K_P_MIN (0.001f)
+#define PROGRAM_SETUP_REGU_K_P_MAX (2.0f)
+uint8_t Program_setup_RegU_k_P(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGU_K_P_MIN)
+    {
+        value = PROGRAM_SETUP_REGU_K_P_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGU_K_P_MAX)
+    {
+        value = PROGRAM_SETUP_REGU_K_P_MAX;
+    }
+    programStruct.setupParam.RegU_k_P = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGU_OUTMAX_MIN (10)
+#define PROGRAM_SETUP_REGU_OUTMAX_MAX (250)
+uint8_t Program_setup_RegU_OutMax(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGU_OUTMAX_MIN)
+    {
+        value = PROGRAM_SETUP_REGU_OUTMAX_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGU_OUTMAX_MAX)
+    {
+        value = PROGRAM_SETUP_REGU_OUTMAX_MAX;
+    }
+    programStruct.setupParam.RegU_OutMax = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGI_IOUT_K_INT_MIN (0.001f)
+#define PROGRAM_SETUP_REGI_IOUT_K_INT_MAX (20.0f)
+uint8_t Program_setup_RegI_Iout_k_Int(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IOUT_K_INT_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IOUT_K_INT_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IOUT_K_INT_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IOUT_K_INT_MAX;
+    }
+    programStruct.setupParam.RegI_Iout_k_Int = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGI_IOUT_K_P_MIN (0.001f)
+#define PROGRAM_SETUP_REGI_IOUT_K_P_MAX (2.0f)
+uint8_t Program_setup_RegI_Iout_k_P(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IOUT_K_P_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IOUT_K_P_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IOUT_K_P_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IOUT_K_P_MAX;
+    }
+    programStruct.setupParam.RegI_Iout_k_P = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGI_IOUT_MAX_MIN (0)
+#define PROGRAM_SETUP_REGI_IOUT_MAX_MAX (250)
+uint8_t Program_setup_RegI_Iout_OutMax(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IOUT_MAX_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IOUT_MAX_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IOUT_MAX_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IOUT_MAX_MAX;
+    }
+    programStruct.setupParam.RegI_Iout_OutMax = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGI_IL_K_INT_MIN (0.001f)
+#define PROGRAM_SETUP_REGI_IL_K_INT_MAX (20.0f)
+uint8_t Program_setup_RegI_IL3_k_Int(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IL_K_INT_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_INT_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IL_K_INT_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_INT_MAX;
+    }
+    programStruct.setupParam.RegI_IL3_k_Int = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGI_IL_K_P_MIN (0.001f)
+#define PROGRAM_SETUP_REGI_IL_K_P_MAX (2.0f)
+uint8_t Program_setup_RegI_IL3_k_P(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IL_K_P_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_P_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IL_K_P_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_P_MAX;
+    }
+    programStruct.setupParam.RegI_IL3_k_P = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_REGI_IL_OUTMAX_MIN (0)
+#define PROGRAM_SETUP_REGI_IL_OUTMAX_MAX (1250)
+uint8_t Program_setup_RegI_IL3_OutMax(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IL_OUTMAX_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IL_OUTMAX_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IL_OUTMAX_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IL_OUTMAX_MAX;
+    }
+    programStruct.setupParam.RegI_IL3_OutMax = value;
+    return 1;
+}
+
+uint8_t Program_setup_RegI_IL4_k_Int(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IL_K_INT_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_INT_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IL_K_INT_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_INT_MAX;
+    }
+    programStruct.setupParam.RegI_IL4_k_Int = value;
+    return 1;
+}
+uint8_t Program_setup_RegI_IL4_k_P(float value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IL_K_P_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_P_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IL_K_P_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IL_K_P_MAX;
+    }
+    programStruct.setupParam.RegI_IL4_k_P = value;
+    return 1;
+}
+uint8_t Program_setup_RegI_IL4_OutMax(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_REGI_IL_OUTMAX_MIN)
+    {
+        value = PROGRAM_SETUP_REGI_IL_OUTMAX_MIN;
+    }
+    else if (value > PROGRAM_SETUP_REGI_IL_OUTMAX_MAX)
+    {
+        value = PROGRAM_SETUP_REGI_IL_OUTMAX_MAX;
+    }
+    programStruct.setupParam.RegI_IL4_OutMax = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_ZI_I_OUT_MIN (5)
+#define PROGRAM_SETUP_ZI_I_OUT_MAX (40)
+uint8_t Program_setup_ZI_Iout_settings(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+     if (value < PROGRAM_SETUP_ZI_I_OUT_MIN)
+    {
+        value = PROGRAM_SETUP_ZI_I_OUT_MIN;
+    }
+    else if (value > PROGRAM_SETUP_ZI_I_OUT_MAX)
+    {
+        value = PROGRAM_SETUP_ZI_I_OUT_MAX;
+    }
+    programStruct.setupParam.ZI_Iout_settings = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_UZPT_LOW_MIN (450)
+#define PROGRAM_SETUP_UZPT_LOW_MAX (520)
+uint8_t Program_check_Uzpt_low(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_UZPT_LOW_MIN)
+    {
+        value = PROGRAM_SETUP_UZPT_LOW_MIN;
+    }
+    else if (value > PROGRAM_SETUP_UZPT_LOW_MAX)
+    {
+        value = PROGRAM_SETUP_UZPT_LOW_MAX;
+    }
+    programStruct.setupParam.check_Uzpt_low = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_UZPT_HIGH_MIN (570)
+#define PROGRAM_SETUP_UZPT_HIGH_MAX (650)
+uint8_t Program_check_Uzpt_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_UZPT_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_UZPT_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_UZPT_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_UZPT_HIGH_MAX;
+    }
+    programStruct.setupParam.check_Uzpt_high = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_IL_HIGH_MIN (50)
+#define PROGRAM_SETUP_IL_HIGH_MAX (145)
+uint8_t Program_check_IL3_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_IL_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_IL_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_IL_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_IL_HIGH_MAX;
+    }
+    programStruct.setupParam.check_IL3_high = value;
+    return 1;
+}
+uint8_t Program_check_IL4_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_IL_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_IL_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_IL_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_IL_HIGH_MAX;
+    }
+    programStruct.setupParam.check_IL4_high = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_IOUT12_HIGH_MIN (50)
+#define PROGRAM_SETUP_IOUT12_HIGH_MAX (145)
+uint8_t Program_check_Iout1_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_IOUT12_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_IOUT12_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_IOUT12_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_IOUT12_HIGH_MAX;
+    }
+    programStruct.setupParam.check_Iout1_high = value;
+    return 1;
+}
+uint8_t Program_check_Iout2_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_IOUT12_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_IOUT12_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_IOUT12_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_IOUT12_HIGH_MAX;
+    }
+    programStruct.setupParam.check_Iout2_high = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_UOUT_HIGH_MIN (650)
+#define PROGRAM_SETUP_UOUT_HIGH_MAX (730)
+uint8_t Program_check_Uout_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    }
+
+    if (value < PROGRAM_SETUP_UOUT_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_UOUT_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_UOUT_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_UOUT_HIGH_MAX;
+    }
+    programStruct.setupParam.check_Uout_high = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_UAKB_NO_MIN (20)
+#define PROGRAM_SETUP_UAKB_NO_MAX (690)
+uint8_t Program_check_Uakb_no(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    } 
+
+    if (value < PROGRAM_SETUP_UAKB_NO_MIN)
+    {
+        value = PROGRAM_SETUP_UAKB_NO_MIN;
+    }
+    else if (value > PROGRAM_SETUP_UAKB_NO_MAX)
+    {
+        value = PROGRAM_SETUP_UAKB_NO_MAX;
+    }
+    programStruct.setupParam.check_Uakb_no = value;
+    return 1;
+}
+
+#define PROGRAM_SETUP_UAKB_HIGH_MIN (420)
+#define PROGRAM_SETUP_UAKB_HIGH_MAX (690)
+uint8_t Program_check_Uakb_high(uint16_t value)
+{
+    if (programStruct.control.step != step_debug)
+    {
+        return 0;
+    } 
+
+    if (value < PROGRAM_SETUP_UAKB_HIGH_MIN)
+    {
+        value = PROGRAM_SETUP_UAKB_HIGH_MIN;
+    }
+    else if (value > PROGRAM_SETUP_UAKB_HIGH_MAX)
+    {
+        value = PROGRAM_SETUP_UAKB_HIGH_MAX;
+    }
+    programStruct.setupParam.check_Uakb_high = value;
     return 1;
 }
 
@@ -441,7 +917,7 @@ __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 //------------  ФУНКЦИИ КОНЕЦ ------------//
 
 //------------   Задача 1 кГц   ------------//
-#define PRG_UPDATE_MDB (150)
+#define PRG_UPDATE_MDB (50)
 void bsp_sys_tick_1k_callback()
 {
     // static uint16_t count_1k_mdb = 0;
@@ -459,7 +935,7 @@ void bsp_sys_tick_1k_callback()
     // }
 
 
-    if (timer_mdb++ > PRG_UPDATE_MDB)
+    if (++timer_mdb > PRG_UPDATE_MDB)
     {
         protocolMbRtuSlaveCtrl_update_tables();
         timer_mdb = 0;
@@ -535,27 +1011,27 @@ __STATIC_INLINE void Program_pwmInit()
 
   switch (programStruct.setupParam.f_PWM)
   {
-  case PWM_3500HZ:
+  case PROGRAM_SETUP_PWM_3500HZ:
     bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_3500_hz, 1);
     bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_3500_hz, 1);
     break;
-  case PWM_4000HZ:
+  case PROGRAM_SETUP_PWM_4000HZ:
     bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4000_hz, 1);
     bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4000_hz, 1);
     break;
-  case PWM_4200HZ:
+  case PROGRAM_SETUP_PWM_4200HZ:
     bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4200_hz, 1);
     bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4200_hz, 1);
     break;
-  case PWM_4800HZ:
+  case PROGRAM_SETUP_PWM_4800HZ:
     bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_4800_hz, 1);
     bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_4800_hz, 1);
     break;
-  case PWM_5000HZ:
+  case PROGRAM_SETUP_PWM_5000HZ:
     bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_5000_hz, 1);
     bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_5000_hz, 1);
     break;
-  case PWM_5600HZ:
+  case PROGRAM_SETUP_PWM_5600HZ:
     bsp_pwm_set_freq (bsp_pwm_outs_group_123, bsp_pwm_freq_5000_hz, 1);
     bsp_pwm_set_freq (bsp_pwm_outs_group_456, bsp_pwm_freq_5000_hz, 1);
     break;
@@ -584,6 +1060,7 @@ __STATIC_INLINE void Program_regulatorInit()
     programStruct.control.sau.RegU.IntMin = 0.0f;
     programStruct.control.sau.RegU.OutMax = programStruct.setupParam.RegU_OutMax;
     programStruct.control.sau.RegU.OutMin = 0.0f;
+    programStruct.control.sau.RegU.period = 1.0f / (float)programStruct.setupParam.f_PWM;
 
     // Регулятор тока Iout
     programStruct.control.sau.RegI[Iout].k_Int  = programStruct.setupParam.RegI_Iout_k_Int;
@@ -592,6 +1069,7 @@ __STATIC_INLINE void Program_regulatorInit()
     programStruct.control.sau.RegI[Iout].IntMin = 0.0f;
     programStruct.control.sau.RegI[Iout].OutMax = programStruct.setupParam.RegI_Iout_OutMax;
     programStruct.control.sau.RegI[Iout].OutMin = 0.0f;
+    programStruct.control.sau.RegI[Iout].period = 1.0f / (float)programStruct.setupParam.f_PWM;
 
     // Регулятор тока IL3
     programStruct.control.sau.RegI[IL3].k_Int  = programStruct.setupParam.RegI_IL3_k_Int;
@@ -600,6 +1078,7 @@ __STATIC_INLINE void Program_regulatorInit()
     programStruct.control.sau.RegI[IL3].IntMin = 0.0f;
     programStruct.control.sau.RegI[IL3].OutMax = programStruct.setupParam.RegI_IL3_OutMax;
     programStruct.control.sau.RegI[IL3].OutMin = 0.0f;
+    programStruct.control.sau.RegI[IL3].period = 1.0f / (float)programStruct.setupParam.f_PWM;
 
     // Регулятор тока IL4
     programStruct.control.sau.RegI[IL4].k_Int  = programStruct.setupParam.RegI_IL4_k_Int;
@@ -608,12 +1087,12 @@ __STATIC_INLINE void Program_regulatorInit()
     programStruct.control.sau.RegI[IL4].IntMin = 0.0f;
     programStruct.control.sau.RegI[IL4].OutMax = programStruct.setupParam.RegI_IL4_OutMax;
     programStruct.control.sau.RegI[IL4].OutMin = 0.0f;
+    programStruct.control.sau.RegI[IL4].period = 1.0f / (float)programStruct.setupParam.f_PWM;
 
     // Задачтик интенсивности 
-    programStruct.control.sau.ZI_Iout.period = 1.0f/(float)programStruct.setupParam.f_PWM;
+    programStruct.control.sau.ZI_Iout.period = 1.0f / (float)programStruct.setupParam.f_PWM;
     programStruct.control.sau.ZI_Iout.settings = programStruct.setupParam.ZI_Iout_settings;
     dsp_intensSetterSetup(&programStruct.control.sau.ZI_Iout);
-
 
     asm("Nop");
 }
@@ -794,13 +1273,13 @@ __STATIC_INLINE uint8_t Program_analogInit()
         programStruct.analog.aIn[i].shift = programStruct.setupParam.analog_shift[i];
     }
 
-    programStruct.analog.aIn[prg_analog_Uzpt].bspIdx = 0;
+    programStruct.analog.aIn[prg_analog_Uzpt].bspIdx             = 0;
     programStruct.analog.aIn[prg_analog_Uout_power_block].bspIdx = 1;
-    programStruct.analog.aIn[prg_analog_Uout].bspIdx = 2;
-    programStruct.analog.aIn[prg_analog_I_L3].bspIdx = 3;
-    programStruct.analog.aIn[prg_analog_I_L4].bspIdx = 4;
-    programStruct.analog.aIn[prg_analog_Iout1].bspIdx = 5;
-    programStruct.analog.aIn[prg_analog_Iout2].bspIdx = 6;
+    programStruct.analog.aIn[prg_analog_Uout].bspIdx             = 2;
+    programStruct.analog.aIn[prg_analog_IL3].bspIdx              = 3;
+    programStruct.analog.aIn[prg_analog_IL4].bspIdx              = 4;
+    programStruct.analog.aIn[prg_analog_Iout1].bspIdx            = 5;
+    programStruct.analog.aIn[prg_analog_Iout2].bspIdx            = 6;
     bsp_analogIn_start();
 
     return 1;
