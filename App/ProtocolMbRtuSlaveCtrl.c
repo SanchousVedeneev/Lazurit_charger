@@ -39,7 +39,7 @@ enum mdb_table_program
   tab_prg_ecode,                            // 1204
   tab_prg_flashCounter,                     // 1205
   tab_prg_analogVal_Uzpt,                   // 1206
-  tab_prg_analogVal_Uout_power_block,       // 1207
+  tab_prg_analogVal_Uout_pp,                // 1207
   tab_prg_analogVal_Uout,                   // 1208
   tab_prg_analogVal_I_L3,                   // 1209
   tab_prg_analogVal_I_L4,                   // 1210
@@ -565,53 +565,124 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       }
       break;
     case tab_param_RegU_k_P:
-      programStruct.setupParam.RegU_k_P = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegU_k_P(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_RegU_OutMax:
-      programStruct.setupParam.RegU_OutMax = value;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegU_OutMax(value))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_RegI_Iout_k_Int:
-      programStruct.setupParam.RegI_Iout_k_Int = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegI_Iout_k_Int(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_RegI_Iout_k_P:
-      programStruct.setupParam.RegI_Iout_k_P = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegI_Iout_k_P(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_RegI_Iout_OutMax:
-      programStruct.setupParam.RegI_Iout_OutMax = value;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegI_Iout_OutMax(value))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_RegI_IL3_k_Int:
-      programStruct.setupParam.RegI_IL3_k_Int = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      break;
+      if (Program_setup_RegI_IL3_k_Int(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
+      break;    
     case tab_param_RegI_IL3_k_P:
-      programStruct.setupParam.RegI_IL3_k_P = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      break;
+      if (Program_setup_RegI_IL3_k_P(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
+      break; 
     case tab_param_RegI_IL3_OutMax:
-      programStruct.setupParam.RegI_IL3_OutMax = value;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegI_IL3_OutMax(value))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_RegI_IL4_k_Int:
-      programStruct.setupParam.RegI_IL4_k_Int = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      break;
+      if (Program_setup_RegI_IL4_k_Int(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
+      break; 
     case tab_param_RegI_IL4_k_P:
-      programStruct.setupParam.RegI_IL4_k_P = value*k_x001;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      break;
+      if (Program_setup_RegI_IL4_k_P(value*k_x001))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
+      break; 
     case tab_param_RegI_IL4_OutMax:
-      programStruct.setupParam.RegI_IL4_OutMax = value;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      if (Program_setup_RegI_IL4_OutMax(value))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
       break;
     case tab_param_ZI_Iout_settings:
-      programStruct.setupParam.ZI_Iout_settings = value;
-      response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      break;
+      if (Program_setup_ZI_Iout_settings(value))
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+      }
+      else
+      {
+        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
+      }
     case tab_param_check_Uzpt_low:
       if (Program_check_Uzpt_low(value))
       {

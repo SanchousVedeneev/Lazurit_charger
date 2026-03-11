@@ -137,7 +137,7 @@ typedef struct
 typedef enum
 {
     prg_analog_Uzpt,
-    prg_analog_Uout_power_block,
+    prg_analog_Uout_pp,
     prg_analog_Uout,
     prg_analog_IL3,
     prg_analog_IL4,

@@ -167,11 +167,11 @@ void Program_start()
 
     // Загрузка параметров
     Program_ParamSetToDefault();
-     if (Program_ParamLoad() == 0)
-     {
-         // Неудачная попытка
-         asm("NOP");
-     }
+    //  if (Program_ParamLoad() == 0)
+    //  {
+    //      // Неудачная попытка
+    //      asm("NOP");
+    //  }
 
     Program_pwmInit();
     Program_regulatorInit();
@@ -206,7 +206,6 @@ __STATIC_INLINE void Program_fastStop()
 /* ЗАДАТЬ НАСТРОЙКИ ПО УМОЛЧАНИЮ */
 void Program_ParamSetToDefault()
 {
- 
     // Настройка обработки аналоговых датчиков (вписать после калибровки датчиков)
     for (uint8_t i = 0; i < PRG_ANALOG_COUNT; i++)
     {
@@ -217,8 +216,8 @@ void Program_ParamSetToDefault()
     programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 0.001f;               
     programStruct.setupParam.analog_shift[prg_analog_Uzpt] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uout_power_block]  = 0.001f;    
-    programStruct.setupParam.analog_shift[prg_analog_Uout_power_block] = 1930.0f;   
+    programStruct.setupParam.analog_kMul[prg_analog_Uout_pp]  = 0.001f;    
+    programStruct.setupParam.analog_shift[prg_analog_Uout_pp] = 1930.0f;   
 
     programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 0.001f;                
     programStruct.setupParam.analog_shift[prg_analog_Uout] = 1930.0f;               
@@ -239,11 +238,11 @@ void Program_ParamSetToDefault()
     programStruct.setupParam.RegU_in     = 450.0f;
     programStruct.setupParam.RegU_k_Int  = 0.001f;
     programStruct.setupParam.RegU_k_P    = 0.001f;
-    programStruct.setupParam.RegU_OutMax = 0.001f;
+    programStruct.setupParam.RegU_OutMax = 20.0f;
 
     programStruct.setupParam.RegI_Iout_k_Int  = 0.001f;
     programStruct.setupParam.RegI_Iout_k_P    = 0.001f;
-    programStruct.setupParam.RegI_Iout_OutMax = 0.001f;
+    programStruct.setupParam.RegI_Iout_OutMax = 20.0f;
 
     programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
     programStruct.setupParam.RegI_IL3_k_P     = 0.001f;
@@ -267,7 +266,7 @@ void Program_ParamSetToDefault()
     programStruct.setupParam.check_Iout2_high = 140.0f;
     programStruct.setupParam.check_Uout_high  = 720.0f;
     programStruct.setupParam.check_Uakb_no    = 300.0f;
-    programStruct.setupParam.check_Uakb_no    = 690.0f;
+    programStruct.setupParam.check_Uakb_high  = 690.0f;
 }
 
 #define PROGRAM_PARAM_SIZE_BYTE sizeof(Program_PARAM_typedef)
@@ -298,9 +297,7 @@ uint8_t Program_ParamSave()
 
 __INLINE uint8_t Program_GoDebug()
 {
-    if (
-        (programStruct.control.step != step_wait_op) &&
-        (programStruct.control.step != step_error))
+    if ((programStruct.control.step != step_wait_op) && (programStruct.control.step != step_error))
     {
         return 0;
     }
@@ -312,14 +309,9 @@ __INLINE uint8_t Program_GoDebug()
     {
         programStruct.control.remote.pwmArray[i] = 0;
     }
-
     programStruct.control.remote.pwmEnable123 = 0;
     programStruct.control.remote.pwmEnable456 = 0;
 
-
-   /*
-        Перед отладкой обнулить REMOTE структуру!
-    */
     Program_switchTarget(target_debug);
     return 1;
 }
@@ -670,7 +662,7 @@ uint8_t Program_setup_RegI_IL4_OutMax(uint16_t value)
     return 1;
 }
 
-#define PROGRAM_SETUP_ZI_I_OUT_MIN (5)
+#define PROGRAM_SETUP_ZI_I_OUT_MIN (2)
 #define PROGRAM_SETUP_ZI_I_OUT_MAX (40)
 uint8_t Program_setup_ZI_Iout_settings(uint16_t value)
 {
@@ -917,7 +909,7 @@ __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 //------------  ФУНКЦИИ КОНЕЦ ------------//
 
 //------------   Задача 1 кГц   ------------//
-#define PRG_UPDATE_MDB (50)
+#define PRG_UPDATE_MDB (100)
 void bsp_sys_tick_1k_callback()
 {
     // static uint16_t count_1k_mdb = 0;
@@ -1273,13 +1265,13 @@ __STATIC_INLINE uint8_t Program_analogInit()
         programStruct.analog.aIn[i].shift = programStruct.setupParam.analog_shift[i];
     }
 
-    programStruct.analog.aIn[prg_analog_Uzpt].bspIdx             = 0;
-    programStruct.analog.aIn[prg_analog_Uout_power_block].bspIdx = 1;
-    programStruct.analog.aIn[prg_analog_Uout].bspIdx             = 2;
-    programStruct.analog.aIn[prg_analog_IL3].bspIdx              = 3;
-    programStruct.analog.aIn[prg_analog_IL4].bspIdx              = 4;
-    programStruct.analog.aIn[prg_analog_Iout1].bspIdx            = 5;
-    programStruct.analog.aIn[prg_analog_Iout2].bspIdx            = 6;
+    programStruct.analog.aIn[prg_analog_Uzpt].bspIdx    = 0;
+    programStruct.analog.aIn[prg_analog_Uout_pp].bspIdx = 1;
+    programStruct.analog.aIn[prg_analog_Uout].bspIdx    = 2;
+    programStruct.analog.aIn[prg_analog_IL3].bspIdx     = 3;
+    programStruct.analog.aIn[prg_analog_IL4].bspIdx     = 4;
+    programStruct.analog.aIn[prg_analog_Iout1].bspIdx   = 5;
+    programStruct.analog.aIn[prg_analog_Iout2].bspIdx   = 6;
     bsp_analogIn_start();
 
     return 1;
