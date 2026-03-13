@@ -243,10 +243,10 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
       ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.rawDataUI[i]); // 1005 - 1016
     }
 
-    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_getTemp(1));
-    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_getTemp(2));
-    // ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.currentTemp[0]);
-    // ModbusSS_SetWord(&mdb_table_bsp, regNo,   bsp_analogIn_struct.currentTemp[1]);
+    // ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_struct.currentTemp[0]);
+    // ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_struct.currentTemp[1]);
+    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_struct.rawDataTemp[0]);
+    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_struct.rawDataTemp[1]);
     // BSP END-----------------------------//
   }
   else if (mdb_table_update == 1)
@@ -309,13 +309,13 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_In, programStruct.control.sau.RegI[IL3].In);
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Fb, programStruct.control.sau.RegI[IL3].Fb);
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_d, (int16_t)programStruct.control.sau.RegI[IL3].d);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Out, programStruct.control.sau.RegI[IL3].Out * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Int, programStruct.control.sau.RegI[IL3].Int * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_P, (int16_t)programStruct.control.sau.RegI[IL3].P * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_OutMax, programStruct.control.sau.RegI[IL3].OutMax * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_OutMin, programStruct.control.sau.RegI[IL3].OutMin * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_IntMax, programStruct.control.sau.RegI[IL3].IntMax * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_IntMin, programStruct.control.sau.RegI[IL3].IntMin * k_1000);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Out, programStruct.control.sau.RegI[IL3].Out);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_Int, programStruct.control.sau.RegI[IL3].Int);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_P, (int16_t)programStruct.control.sau.RegI[IL3].P);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_OutMax, programStruct.control.sau.RegI[IL3].OutMax);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_OutMin, programStruct.control.sau.RegI[IL3].OutMin);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_IntMax, programStruct.control.sau.RegI[IL3].IntMax);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL3_IntMin, programStruct.control.sau.RegI[IL3].IntMin);
 
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_k_P, programStruct.control.sau.RegI[IL4].k_P * k_1000);
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_k_Int, programStruct.control.sau.RegI[IL4].k_Int * k_1000);
@@ -323,13 +323,13 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_In, programStruct.control.sau.RegI[IL4].In);
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Fb, programStruct.control.sau.RegI[IL4].Fb);
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_d, (int16_t)programStruct.control.sau.RegI[IL4].d);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Out, programStruct.control.sau.RegI[IL4].Out * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Int, programStruct.control.sau.RegI[IL4].Int * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_P, (int16_t)programStruct.control.sau.RegI[IL4].P * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_OutMax, programStruct.control.sau.RegI[IL4].OutMax * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_OutMin, programStruct.control.sau.RegI[IL4].OutMin * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_IntMax, programStruct.control.sau.RegI[IL4].IntMax * k_1000);
-    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_IntMin, programStruct.control.sau.RegI[IL4].IntMin * k_1000);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Out, programStruct.control.sau.RegI[IL4].Out);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_Int, programStruct.control.sau.RegI[IL4].Int);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_P, (int16_t)programStruct.control.sau.RegI[IL4].P);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_OutMax, programStruct.control.sau.RegI[IL4].OutMax);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_OutMin, programStruct.control.sau.RegI[IL4].OutMin);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_IntMax, programStruct.control.sau.RegI[IL4].IntMax);
+    ModbusSS_SetWord(&mdb_table_regulator, tab_regul_RegI_IL4_IntMin, programStruct.control.sau.RegI[IL4].IntMin);
 
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_in, programStruct.control.sau.ZI_Iout.in);
     ModbusSS_SetWord(&mdb_table_regulator, tab_regul_ZI_Iout_step, programStruct.control.sau.ZI_Iout.step * k_100000);
@@ -363,7 +363,7 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
 
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_in, programStruct.setupParam.RegU_in);
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_k_Int, programStruct.setupParam.RegU_k_Int * k_1000);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_k_P, programStruct.setupParam.RegU_k_Int * k_1000);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_k_P, programStruct.setupParam.RegU_k_P * k_1000);
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegU_OutMax, programStruct.setupParam.RegU_OutMax);
 
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_Iout_k_Int, programStruct.setupParam.RegI_Iout_k_Int * k_1000);
@@ -372,11 +372,11 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
 
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_k_Int, programStruct.setupParam.RegI_IL3_k_Int * k_1000);
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_k_P, programStruct.setupParam.RegI_IL3_k_P * k_1000);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_OutMax, programStruct.setupParam.RegI_IL3_OutMax * k_1000);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL3_OutMax, programStruct.setupParam.RegI_IL3_OutMax);
 
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_k_Int, programStruct.setupParam.RegI_IL4_k_Int * k_1000);
     ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_k_P, programStruct.setupParam.RegI_IL4_k_P * k_1000);
-    ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_OutMax, programStruct.setupParam.RegI_IL4_OutMax * k_1000);
+    ModbusSS_SetWord(&mdb_table_param, tab_param_RegI_IL4_OutMax, programStruct.setupParam.RegI_IL4_OutMax);
 
     ModbusSS_SetWord(&mdb_table_param, tab_param_ZI_Iout_settings, programStruct.setupParam.ZI_Iout_settings);
 
@@ -443,6 +443,13 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       case protocol_cmd_pwmOuts456:
         param = ModbusSS_GetWord(&mdb_table_program, tab_prg_param);
         if (Program_set_pwmOuts_debug(modbusRtu_ctrlStruct.cmd - protocol_cmd_pwmOuts123, param))
+        {
+          response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
+        }
+        break;
+      case protocol_cmd_start_stop_charger:
+        param = ModbusSS_GetWord(&mdb_table_program, tab_prg_param);
+        if (Program_StartStopCharger(param))
         {
           response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
         }
@@ -539,19 +546,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_RegU_in:
       if (Program_setup_RegU_in(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_RegU_k_Int:
@@ -559,19 +558,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_RegU_k_P:
       if (Program_setup_RegU_k_P(value*k_x001))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_RegU_OutMax:
@@ -579,19 +570,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_RegI_Iout_k_Int:
       if (Program_setup_RegI_Iout_k_Int(value*k_x001))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_RegI_Iout_k_P:
@@ -599,19 +582,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_RegI_Iout_OutMax:
       if (Program_setup_RegI_Iout_OutMax(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_RegI_IL3_k_Int:
@@ -619,19 +594,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;    
     case tab_param_RegI_IL3_k_P:
       if (Program_setup_RegI_IL3_k_P(value*k_x001))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break; 
     case tab_param_RegI_IL3_OutMax:
@@ -639,19 +606,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_RegI_IL4_k_Int:
       if (Program_setup_RegI_IL4_k_Int(value*k_x001))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break; 
     case tab_param_RegI_IL4_k_P:
@@ -659,19 +618,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break; 
     case tab_param_RegI_IL4_OutMax:
       if (Program_setup_RegI_IL4_OutMax(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_ZI_Iout_settings:
@@ -679,18 +630,10 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
     case tab_param_check_Uzpt_low:
       if (Program_check_Uzpt_low(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_check_Uzpt_high:
@@ -698,19 +641,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_check_IL3_high:
       if (Program_check_IL3_high(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_check_IL4_high:
@@ -718,19 +653,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_check_Iout1_high:
       if (Program_check_Iout1_high(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_check_Iout2_high:
@@ -738,19 +665,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_check_Uout_high:
       if (Program_check_Uout_high(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     case tab_param_check_Uakb_no:
@@ -758,19 +677,11 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
-      }
       break;
     case tab_param_check_Uakb_high:
       if (Program_check_Uakb_high(value))
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
-      }
-      else
-      {
-        response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
       }
       break;
     }

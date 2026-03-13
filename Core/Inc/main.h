@@ -73,8 +73,12 @@ void Error_Handler(void);
 #define _TIM1K_ARR (16800-1)
 #define _CAN_PSC _CAN_500_PSC
 #define _TIM1K_PSC (10-1)
+#define _TIM_SPI_INOUT_20KHZ_INE 1000
 #define _HRTIM_PERIOD 10500
+#define _TIM_SPI_INOUT_20KHZ_ARR (20000-1)
+#define _TIM_SPI_INOUT_20KHZ_SOEN (18000)
 #define _CAN_SEG1 _CAN_500_SEG1
+#define _TIM_SPI_INOUT_20KHZ_START 1600
 #define _LAMP_TIM_ARR 8400-1
 #define _CAN_SEG2 _CAN_500_SEG2
 #define _ADC_TIM _ADC_TIM_24000
@@ -89,10 +93,6 @@ void Error_Handler(void);
 #define _CAN_500_SEG2 2
 #define _TIM10K_SPI_ARR (16800-1)
 #define _TIM10K_SPI_SOEN 1000
-#define _TIM_SPI_INOUT_20KHZ_ARR (20000-1)
-#define _TIM_SPI_INOUT_20KHZ_INE 1000
-#define _TIM_SPI_INOUT_20KHZ_SOEN (18000)
-#define _TIM_SPI_INOUT_20KHZ_START 1600
 #define NRST_Pin LL_GPIO_PIN_10
 #define NRST_GPIO_Port GPIOG
 #define COMP_I1_Pin LL_GPIO_PIN_1

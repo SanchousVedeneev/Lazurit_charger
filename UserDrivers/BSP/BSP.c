@@ -351,15 +351,12 @@ bsp_adc_struct adcStruct[BSP_ANALOG_IN_COUNT] = {
 bsp_analogIn_typedef bsp_analogIn_struct;
 __INLINE float bsp_analogIn_getTemp(uint8_t channel)
 {
-
   const dsp_point_typedef tempPoints[] = {
-      {.x = 7500.0f, .y = 100.0f},
-      {.x = 10000.0f, .y = 85.0f},
-      {.x = 12500.0f, .y = 78.0f},
-      {.x = 20000.0f, .y = 62.0f},
-      {.x = 30000.0f, .y = 46.0f},
-      {.x = 35000.0f, .y = 40.0f},
-      {.x = 65535.0f, .y = 5.0f}};
+      {.x = 7749.0f,  .y = 90.0f},
+      {.x = 13180.0f, .y = 70.0f},
+      {.x = 17190.0f, .y = 60.0f},
+      {.x = 28770.0f, .y = 40.0f},
+      {.x = 60310.0f, .y = 0.1f },};
 
   const uint8_t tempPointsCount = sizeof(tempPoints) / sizeof(tempPoints[0]);
 

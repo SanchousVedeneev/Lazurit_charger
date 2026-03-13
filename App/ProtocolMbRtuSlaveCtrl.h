@@ -11,8 +11,7 @@ typedef enum
     protocol_cmd_reset,
     protocol_cmd_pwmOuts123,
     protocol_cmd_pwmOuts456,
-    protocol_cmd_start_chrge,
-    protocol_cmd_stop_chrge
+    protocol_cmd_start_stop_charger
 } protocolMbRtuSlaveCtrl_control_typedef;
 
 typedef struct

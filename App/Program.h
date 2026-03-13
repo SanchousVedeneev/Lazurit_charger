@@ -14,7 +14,13 @@ typedef enum
     step_debug,
     step_reset,
     step_error,
-    step_wait_op
+    step_wait_op,
+    step_chargerWaitBatU,
+    step_chargerWaitZptU,
+    step_chargerUpFilterU,
+    step_chargerReady,
+    step_chargerWork,
+    step_chargerStop
 } Program_STEP_typedef;
 
 //Targets
@@ -23,6 +29,7 @@ typedef enum
     target_debug = 1,
     target_waitOp,
     target_reset,
+    target_chargerWork,
     target_error
 } Program_TARGET_typedef;
 
@@ -37,11 +44,11 @@ typedef enum
     error_IL4_high,
     error_Iout1_high,
     error_Iout2_high,
-    error_Iout_high,
     error_Uout_high,
     error_akb_no,
     error_akb_U_high,
-    error_akb_fault_polarity
+    error_akb_fault_polarity,
+    error_UpFilterU_fail
 } Program_ERROR_typedef;
 
 typedef enum
@@ -71,10 +78,10 @@ typedef enum
 	prg_dout4_fan_power,  // 3
 	prg_dout5_fan_cap,    // 4
 	prg_dout6_fan_L,      // 5
-	prg_dout7,            // 6
-	prg_dout8,            // 7
-	prg_dout9,            // 8
-	prg_dout10            // 9
+	prg_dout7_UNUSED,     // 6
+	prg_dout8_UNUSED,     // 7
+	prg_dout9_UNUSED,     // 8
+	prg_dout10_UNUSED     // 9
 } Program_dout_typedef;
 
 typedef struct
@@ -113,6 +120,7 @@ typedef enum
 typedef struct
 {
     uint8_t chargerStart;
+    uint8_t chargerUpFilterU;
     dsp_regulator_typedef RegI[3];
     dsp_regulator_typedef RegU;
     dsp_intensSetter_typedef ZI_Iout;
@@ -248,6 +256,7 @@ uint8_t Program_set_dout_debug(uint16_t douts);
 uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc);
 uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOff);
 uint8_t Program_LoadDefaultParam_debug();
+uint8_t Program_StartStopCharger(uint8_t startStop);
 
 uint8_t Program_GoReset();
 

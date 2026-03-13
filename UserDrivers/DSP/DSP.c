@@ -65,11 +65,11 @@ void dsp_intensSetterSetup(dsp_intensSetter_typedef* intens)
 
 void dsp_intensSetterUpProcess(dsp_intensSetter_typedef* intens)
 {
-  if(intens->in > intens->out)
+  if (intens->in > intens->out)
   {
     intens->out += intens->step;
   }
-  else if(intens->in < intens->out)
+  else if (intens->in < intens->out)
   {
     intens->out = intens->in;
   }

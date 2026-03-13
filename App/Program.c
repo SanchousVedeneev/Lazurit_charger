@@ -17,6 +17,8 @@ __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error);
 
 #define SET_PWM_STEP_UP(IDX,VALUE_1000) bsp_pwm_set_ccrPercentX10((IDX), 1000.0f - (VALUE_1000))
 #define SET_PWM_STEP_DOWN(IDX,VALUE_1000) bsp_pwm_set_ccrPercentX10((IDX), (VALUE_1000))
+
+__STATIC_INLINE void set_pwm_charger(float inPwm, uint8_t channel);
 /*----------------------------- PRIVATE FCN MACRO END ---------------------------------*/
 
 // --------------------- EXTERN ---------------------//
@@ -24,7 +26,9 @@ extern bsp_analogIn_typedef bsp_analogIn_struct;
 // --------------------- EXTERN END---------------------//
 
 /*----------------------------- STEPS ---------------------------------*/
-#define PRG_LED_FAULT_BLINK_PERIOD (200)
+#define PRG_LED_FAULT_BLINK_PERIOD   (200)
+#define PRG_LED_WAIT_OP_BLINK_PERIOD (1000)
+#define PRG_DEBUG_BLINK_PERIOD (100)
 __STATIC_INLINE void __stepWaitInit()
 {
 
@@ -79,7 +83,7 @@ __STATIC_INLINE void __stepDebug()
 {
     static uint16_t cnt_led = 0;
 
-    if (((cnt_led++) % 100)==0)
+    if (((cnt_led++) % PRG_DEBUG_BLINK_PERIOD)==0)
     {
         BSP_LED_TOGGLE(BSP_LED_RDY);
     }
@@ -140,22 +144,306 @@ __STATIC_INLINE void __stepWaitOp()
 {
     static uint16_t cnt = 0;
 
-
-    if(((cnt++)%1000)==0){
+    if(((cnt++)%PRG_LED_WAIT_OP_BLINK_PERIOD)==0){
         BSP_LED_TOGGLE(BSP_LED_RDY);
     }
 
-//---------------- переключатель
     switch (programStruct.control.target)
     {
+    case target_chargerWork:
+        programStruct.control.step = step_chargerWaitBatU; 
+        break;
     case target_debug:
-        programStruct.control.step = step_debug; // ------->
+        programStruct.control.step = step_debug; 
         break;
     default:
         break;
     }
-//---------------- переключатель конец
+}
 
+#define TIMER_WAIT_BAT_U  (100)
+#define TIMER_WAIT_ZPT_U  (100)
+#define TIMER_UP_FILTER_U (10000)
+#define TIMER_READY       (500)
+__STATIC_INLINE void __step_chargerWaitBatU()
+{
+    static uint16_t timerWaitBatU = 0;
+
+    // Check error
+    if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
+    {
+        Program_setError(error_link_panel);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uout].value < (-30.0f))
+    {
+        Program_setError(error_akb_fault_polarity);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uout].value < programStruct.setupParam.check_Uakb_no)
+    {
+        Program_setError(error_akb_no);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uout].value > programStruct.setupParam.check_Uakb_high)
+    {
+        Program_setError(error_akb_U_high);
+    }
+
+    // Check target and program timer
+    if (programStruct.control.target == target_chargerWork)
+    {
+        if (timerWaitBatU++ < TIMER_WAIT_BAT_U)
+        {
+            return;
+        }
+    }
+    timerWaitBatU = 0;
+
+    // Switch
+    switch (programStruct.control.target)
+    {
+    case target_chargerWork:
+        programStruct.control.step = step_chargerWaitZptU;
+        break;
+    case target_waitOp:
+        programStruct.control.step = step_chargerStop;
+        break;
+    case target_error:
+        programStruct.control.step = step_error;
+        break;
+    default:
+        break;
+    }
+}
+__STATIC_INLINE void __step_chargerWaitZptU()
+{
+    static uint16_t timerWaitZptU = 0;
+
+    // Check error
+    if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
+    {
+        Program_setError(error_link_panel);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value < programStruct.setupParam.check_Uzpt_low)
+    {
+        Program_setError(error_Uzpt_low);  
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value > programStruct.setupParam.check_Uzpt_high)
+    {
+        Program_setError(error_Uzpt_high);  
+    }
+
+    // Check target and program timer
+    if (programStruct.control.target == target_chargerWork)
+    {
+        if (timerWaitZptU++ < TIMER_WAIT_ZPT_U)
+        {
+            return;
+        }
+    }
+    timerWaitZptU = 0;
+
+    // Switch
+    switch (programStruct.control.target)
+    {
+    case target_chargerWork:
+        programStruct.control.step = step_chargerUpFilterU;
+        break;
+    case target_waitOp:
+        programStruct.control.step = step_chargerStop;
+        break;
+    case target_error:
+        programStruct.control.step = step_error;
+        break;
+    default:
+        break;
+    }
+}
+__STATIC_INLINE void __step_chargerUpFilterU()
+{
+    static uint16_t timerUpFilterU = 0;
+
+    if (timerUpFilterU == 0)
+    {
+        Program_setDout(prg_dout1_KM1_KM2);
+    }
+    else if (timerUpFilterU == 1000)
+    {
+        programStruct.control.sau.chargerUpFilterU = 1;
+        Program_pwmOutsControl(bsp_pwm_outs_group_123, 1);
+        Program_pwmOutsControl(bsp_pwm_outs_group_456, 1);
+    }
+
+    // Check error
+    if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
+    {
+        Program_setError(error_link_panel);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uout].value < (-30.0f))
+    {
+        Program_setError(error_akb_fault_polarity);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uout].value < programStruct.setupParam.check_Uakb_no)
+    {
+        Program_setError(error_akb_no);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uout].value > programStruct.setupParam.check_Uakb_high)
+    {
+        Program_setError(error_akb_U_high);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value < programStruct.setupParam.check_Uzpt_low)
+    {
+        Program_setError(error_Uzpt_low);  
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value > programStruct.setupParam.check_Uzpt_high)
+    {
+        Program_setError(error_Uzpt_high);  
+    }
+
+    // Check target and program timer
+    if (programStruct.control.target == target_chargerWork)
+    {
+        if (timerUpFilterU++ < TIMER_UP_FILTER_U)
+        {
+            if ((programStruct.analog.aIn[prg_analog_Uout].value - programStruct.analog.aIn[prg_analog_Uout_pp].value) < 10.0f) 
+            {
+                programStruct.control.sau.chargerUpFilterU = 0;
+                Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
+                Program_pwmOutsControl(bsp_pwm_outs_group_456, 0);
+                timerUpFilterU = TIMER_UP_FILTER_U;
+            }
+            return;
+        }
+        else if (programStruct.control.sau.chargerUpFilterU == 1)
+        {
+            Program_setError(error_UpFilterU_fail); 
+        }
+    }
+    timerUpFilterU = 0;
+
+    // Switch
+    switch (programStruct.control.target)
+    {
+    case target_chargerWork:
+        programStruct.control.step = step_chargerReady;
+        break;
+    case target_waitOp:
+        programStruct.control.step = step_chargerStop;
+        break;
+    case target_error:
+        programStruct.control.step = step_error;
+        break;
+    default:
+        break;
+    }
+}
+__STATIC_INLINE void __step_chargerReady()
+{
+    static uint16_t timerReady = 0;
+
+    if (timerReady == 0)
+    {
+        Program_setDout(prg_dout2_KM3);
+        Program_setDout(prg_dout3_KM4);
+    }
+
+    // Check error
+    if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
+    {
+        Program_setError(error_link_panel);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value < programStruct.setupParam.check_Uzpt_low)
+    {
+        Program_setError(error_Uzpt_low);  
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value > programStruct.setupParam.check_Uzpt_high)
+    {
+        Program_setError(error_Uzpt_high);  
+    }
+
+    // Check target and program timer
+    if (programStruct.control.target == target_chargerWork)
+    {
+        if (timerReady++ < TIMER_READY)
+        {
+            return;
+        }
+        else
+        {
+            programStruct.control.sau.chargerStart = 1;
+            Program_pwmOutsControl(bsp_pwm_outs_group_123, 1);
+            Program_pwmOutsControl(bsp_pwm_outs_group_456, 1);
+        }
+    }
+    timerReady = 0;
+
+    // Switch
+    switch (programStruct.control.target)
+    {
+    case target_chargerWork:
+        programStruct.control.step = step_chargerWork;
+        break;
+    case target_waitOp:
+        programStruct.control.step = step_chargerStop;
+        break;
+    case target_error:
+        programStruct.control.step = step_error;
+        break;
+    default:
+        break;
+    }
+}
+__STATIC_INLINE void __step_chargerWork()
+{
+    // Check error
+    if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
+    {
+        Program_setError(error_link_panel);
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value < programStruct.setupParam.check_Uzpt_low)
+    {
+        Program_setError(error_Uzpt_low);  
+    }
+    if (programStruct.analog.aIn[prg_analog_Uzpt].value > programStruct.setupParam.check_Uzpt_high)
+    {
+        Program_setError(error_Uzpt_high);  
+    }
+
+    // Switch
+    switch (programStruct.control.target)
+    {
+    case target_waitOp:
+        programStruct.control.step = step_chargerStop;
+        break;
+    case target_error:
+        programStruct.control.step = step_error;
+        break;
+    default:
+        break;
+    }
+}
+__STATIC_INLINE void __step_chargerStop()
+{
+    /* снять все импульсы, выключить все контакторы*/
+    programStruct.control.sau.chargerStart = 0;
+    programStruct.control.sau.chargerUpFilterU = 0;
+    Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
+    Program_pwmOutsControl(bsp_pwm_outs_group_456, 0);
+    Program_resetDout(prg_dout1_KM1_KM2);
+    Program_resetDout(prg_dout2_KM3);
+    Program_resetDout(prg_dout3_KM4);
+    // bsp_dInOut_setDouts1_10(0);
+
+    // Switch
+    switch (programStruct.control.target)
+    {
+    case target_waitOp:
+        programStruct.control.step = step_wait_op;
+        break;
+    case target_error:
+        programStruct.control.step = step_error;
+        break;
+    default:
+        break;
+    }
 }
 /*----------------------------- STEPS END ---------------------------------*/
 
@@ -167,11 +455,11 @@ void Program_start()
 
     // Загрузка параметров
     Program_ParamSetToDefault();
-    //  if (Program_ParamLoad() == 0)
-    //  {
-    //      // Неудачная попытка
-    //      asm("NOP");
-    //  }
+     if (Program_ParamLoad() == 0)
+     {
+         // Неудачная попытка
+         asm("NOP");
+     }
 
     Program_pwmInit();
     Program_regulatorInit();
@@ -198,9 +486,14 @@ __STATIC_INLINE uint8_t Program_checkDin(Program_din_typedef din)
 __STATIC_INLINE void Program_fastStop()
 {
     /* снять все импульсы, выключить все контакторы*/
+    programStruct.control.sau.chargerStart = 0;
+    programStruct.control.sau.chargerUpFilterU = 0;
     Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
     Program_pwmOutsControl(bsp_pwm_outs_group_456, 0);
-    bsp_dInOut_setDouts1_10(0);
+    Program_resetDout(prg_dout1_KM1_KM2);
+    Program_resetDout(prg_dout2_KM3);
+    Program_resetDout(prg_dout3_KM4);
+    // bsp_dInOut_setDouts1_10(0);
 }
 
 /* ЗАДАТЬ НАСТРОЙКИ ПО УМОЛЧАНИЮ */
@@ -246,11 +539,11 @@ void Program_ParamSetToDefault()
 
     programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
     programStruct.setupParam.RegI_IL3_k_P     = 0.001f;
-    programStruct.setupParam.RegI_IL3_OutMax  = 0.001f;
+    programStruct.setupParam.RegI_IL3_OutMax  = 1.0f;
 
     programStruct.setupParam.RegI_IL4_k_Int   = 0.001f;
     programStruct.setupParam.RegI_IL4_k_P     = 0.001f;
-    programStruct.setupParam.RegI_IL4_OutMax  = 0.001f;
+    programStruct.setupParam.RegI_IL4_OutMax  = 1.0f;
 
     programStruct.setupParam.ZI_Iout_settings = 5.0f;
 
@@ -326,7 +619,7 @@ __INLINE uint8_t Program_set_dout_debug(uint16_t douts)
     return 0;
 }
 
-#define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (250)
+#define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (300)
 #define PWM_REMOTE_MAX_PERCENT_STEP_DOWN_X10 (1000)
 __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc)
 {
@@ -587,7 +880,7 @@ uint8_t Program_setup_RegI_IL3_k_P(float value)
 }
 
 #define PROGRAM_SETUP_REGI_IL_OUTMAX_MIN (0)
-#define PROGRAM_SETUP_REGI_IL_OUTMAX_MAX (1250)
+#define PROGRAM_SETUP_REGI_IL_OUTMAX_MAX (1300)
 uint8_t Program_setup_RegI_IL3_OutMax(uint16_t value)
 {
     if (programStruct.control.step != step_debug)
@@ -683,7 +976,7 @@ uint8_t Program_setup_ZI_Iout_settings(uint16_t value)
     return 1;
 }
 
-#define PROGRAM_SETUP_UZPT_LOW_MIN (450)
+#define PROGRAM_SETUP_UZPT_LOW_MIN (440)
 #define PROGRAM_SETUP_UZPT_LOW_MAX (520)
 uint8_t Program_check_Uzpt_low(uint16_t value)
 {
@@ -866,6 +1159,24 @@ uint8_t Program_check_Uakb_high(uint16_t value)
     return 1;
 }
 
+__INLINE uint8_t Program_StartStopCharger(uint8_t startStop)
+{
+    if (startStop)
+    {
+        if (programStruct.control.step == step_wait_op)
+        {
+            Program_switchTarget(target_chargerWork);
+            return 1;
+        }
+    }
+    else
+    {
+        Program_switchTarget(target_waitOp);
+        return 1;
+    }
+    return 0;
+}
+
 __INLINE uint8_t Program_GoReset()
 {
     if(programStruct.control.step == step_debug)
@@ -909,31 +1220,42 @@ __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 //------------  ФУНКЦИИ КОНЕЦ ------------//
 
 //------------   Задача 1 кГц   ------------//
+#define PRG_TEMP_ON_FAN  (50)
+#define PRG_TEMP_OFF_FAN (40)
+#define PRG_TIMER_FAN_POWER (4000)
 #define PRG_UPDATE_MDB (100)
 void bsp_sys_tick_1k_callback()
 {
     // static uint16_t count_1k_mdb = 0;
     static uint16_t timer_mdb = 0;
-
-    // Проверка нажатия Аварийного стопа
-    // В отладочном режиме аварийный стоп не работает!
-    // if ((Program_checkDin(prg_din3_ALARM_STOP) == PRG_DIN_ALARM_STOP_VAL) &&
-    //     (programStruct.control.target != target_debug))
-    // {
-    //     if (Program_setError(error_fastStop))
-    //     {
-    //         programStruct.control.step = step_error;
-    //     }
-    // }
-
+    static uint16_t timer_fan = 0;
 
     if (++timer_mdb > PRG_UPDATE_MDB)
     {
         protocolMbRtuSlaveCtrl_update_tables();
         timer_mdb = 0;
     }
-    
-    
+
+    if (++timer_fan > PRG_TIMER_FAN_POWER)
+    {
+        if (programStruct.control.step != step_debug)
+        {
+            if ((bsp_analogIn_struct.currentTemp[0] > PRG_TEMP_ON_FAN) || (bsp_analogIn_struct.currentTemp[1] > PRG_TEMP_ON_FAN))
+            {
+                Program_setDout(prg_dout4_fan_power);
+                Program_setDout(prg_dout5_fan_cap);
+                Program_setDout(prg_dout6_fan_L);
+            }
+            else if ((bsp_analogIn_struct.currentTemp[0] < PRG_TEMP_OFF_FAN) && (bsp_analogIn_struct.currentTemp[1] < PRG_TEMP_OFF_FAN))
+            {
+                Program_resetDout(prg_dout4_fan_power);
+                Program_resetDout(prg_dout5_fan_cap);
+                Program_resetDout(prg_dout6_fan_L);
+            }
+        }
+        timer_fan = 0;
+    }
+
     // // Формируем и сбрасываем ошибку связи Modbus с панелью (возможно стоит переделать)
     // if(programStruct.PanParam.mdb_rx == PAN_MDB_STATE_ERR)
     // {
@@ -958,9 +1280,6 @@ void bsp_sys_tick_1k_callback()
     case step_init:
         __stepInit();
         break;
-    case step_wait_op:
-        __stepWaitOp();
-        break;
     case step_debug:
         __stepDebug();
         break;
@@ -969,6 +1288,27 @@ void bsp_sys_tick_1k_callback()
         break;
     case step_error:
         __stepError();
+        break;
+    case step_wait_op:
+        __stepWaitOp();
+        break;
+    case step_chargerWaitBatU:
+        __step_chargerWaitBatU();
+        break;
+    case step_chargerWaitZptU:
+        __step_chargerWaitZptU();
+        break;
+    case step_chargerUpFilterU:
+        __step_chargerUpFilterU();
+        break;
+    case step_chargerReady:
+        __step_chargerReady();
+        break;
+    case step_chargerWork:
+        __step_chargerWork();
+        break;
+    case step_chargerStop:
+        __step_chargerStop();
         break;
     default:
         break;
@@ -1045,7 +1385,6 @@ __STATIC_INLINE void Program_pwmInit()
 __STATIC_INLINE void Program_regulatorInit()
 {
     // Регулятор напряжения
-    programStruct.control.sau.RegU.In     = programStruct.setupParam.RegU_in;
     programStruct.control.sau.RegU.k_Int  = programStruct.setupParam.RegU_k_Int;
     programStruct.control.sau.RegU.k_P    = programStruct.setupParam.RegU_k_P;
     programStruct.control.sau.RegU.IntMax = programStruct.setupParam.RegU_OutMax;
@@ -1113,9 +1452,159 @@ uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOf
 
 void bsp_pwm_123_callback()
 {
+    static dsp_regulator_typedef* reg = NULL;
+    static float UpFilterU_intens_setter_PWM = 0.0f;
+    static float i_charge = 0.0f;
+    static float i_L = 0.0f;
+
+    // error
+    if (programStruct.analog.aIn[prg_analog_Uout_pp].value > programStruct.setupParam.check_Uout_high)
+    {
+        Program_setError(error_Uout_high);  
+    }
+    if (programStruct.analog.aIn[prg_analog_IL3].value > programStruct.setupParam.check_IL3_high)
+    {
+        Program_setError(error_IL3_high);  
+    }
+    if (programStruct.analog.aIn[prg_analog_IL4].value > programStruct.setupParam.check_IL4_high)
+    {
+        Program_setError(error_IL4_high);  
+    }
+    if (programStruct.analog.aIn[error_Iout1_high].value > programStruct.setupParam.check_Iout1_high)
+    {
+        Program_setError(error_Iout1_high);  
+    }
+    if (programStruct.analog.aIn[error_Iout2_high].value > programStruct.setupParam.check_Iout2_high)
+    {
+        Program_setError(error_Iout2_high);  
+    }
+
     if (programStruct.control.step == step_debug)
     {
         return;
+    }
+
+    if (programStruct.control.sau.chargerStart == 0)
+    {
+        reg = &programStruct.control.sau.RegU;
+        dsp_regulatorReset(reg);
+
+        for (uint8_t i = 0; i < 3; i++)
+        {
+            reg = &programStruct.control.sau.RegI[i];
+            dsp_regulatorReset(reg);
+        }
+
+        if (programStruct.control.sau.chargerUpFilterU == 0)
+        {
+
+            UpFilterU_intens_setter_PWM = 0;
+            set_pwm_charger(0.0f, 1);
+            set_pwm_charger(0.0f, 2);
+        }
+        else
+        {
+            if (UpFilterU_intens_setter_PWM < 1040.0f)
+            {
+                UpFilterU_intens_setter_PWM += 0.05f;
+            }
+            if (UpFilterU_intens_setter_PWM >= 1040.0f)
+            {
+                UpFilterU_intens_setter_PWM = 1040.0f;
+            }
+            set_pwm_charger(UpFilterU_intens_setter_PWM, 1);
+        }
+
+        return;
+    }
+
+    // Вариант в работу
+    //----------------- Регулятор напряжения ---------------//
+    reg = &programStruct.control.sau.RegU;
+    reg->In = programStruct.setupParam.RegU_in;
+    reg->Fb = programStruct.analog.aIn[prg_analog_Uout_pp].value;
+    dsp_regulatorProcess(reg);
+    i_charge = reg->Out;
+    //-------------- Регулятор напряжения Конец ------------//
+
+    //----------------- Регулятор выходного тока ---------------//
+    reg = &programStruct.control.sau.RegI[Iout];
+    reg->In = i_charge;
+    reg->Fb = (programStruct.analog.aIn[prg_analog_Iout1].value + programStruct.analog.aIn[prg_analog_Iout2].value);
+    dsp_regulatorProcess(reg);
+    //-------------- Регулятор выходного тока Конец ------------//
+
+    //----------------- Задатчик интенсивности тока ---------------//
+    programStruct.control.sau.ZI_Iout.in = reg->Out;
+    dsp_intensSetterUpProcess(&programStruct.control.sau.ZI_Iout);
+    i_L = programStruct.control.sau.ZI_Iout.out/2;
+    //----------------- Задатчик интенсивности тока Конец ---------------//
+
+    //----------------- Регулятор тока дросселя L3 (канал 1) ---------------//
+    reg = &programStruct.control.sau.RegI[IL3];
+    reg->In = i_L;
+    reg->Fb = programStruct.analog.aIn[prg_analog_IL3].value;
+    dsp_regulatorProcess(reg);
+    set_pwm_charger(reg->Out, 1);
+    //-------------- Регулятор тока дросселя L3 (канал 1) Конец ------------//
+
+    //----------------- Регулятор тока дросселя L4 (канал 2) ---------------//
+    reg = &programStruct.control.sau.RegI[IL4];
+    reg->In = i_L;
+    reg->Fb = programStruct.analog.aIn[prg_analog_IL4].value;
+    dsp_regulatorProcess(reg);
+    set_pwm_charger(reg->Out, 2);
+    //-------------- Регулятор тока дросселя L4 (канал 2) Конец ------------//
+}
+
+#define PRG_STEP_DOWN_PP1 (0)
+#define PRG_STEP_DOWN_PP2 (1)
+#define PRG_STEP_UP_PP1   (3)
+#define PRG_STEP_UP_PP2   (4)
+__STATIC_INLINE void set_pwm_charger(float inPwm, uint8_t channel)
+{
+    if (channel == 1)
+    {
+        if ((inPwm >= 0.0f) && (inPwm < 1000.0f))
+        {
+            SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP1, inPwm);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP1, 0.0f);
+        }
+        else if ((inPwm >= 1000.0f) && (inPwm < 2000.0f))
+        {
+            SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP1, 1000.0f);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP1, inPwm - 1000.0f);
+        }
+        else
+        {
+            SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP1, 0.0f);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP1, 0.0f);
+        }
+    }
+    else if (channel == 2)
+    {
+        if ((inPwm >= 0.0f) && (inPwm < 1000.0f))
+        {
+            SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP2, inPwm);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP2, 0.0f);
+        }
+        else if ((inPwm >= 1000.0f) && (inPwm < 2000.0f))
+        {
+            SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP2, 1000.0f);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP2, inPwm - 1000.0f);
+        }
+        else
+        {
+            SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP2, 0.0f);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP2, 0.0f);
+        }
+    }
+    else
+    {
+        SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP1, 0.0f);
+        SET_PWM_STEP_UP(PRG_STEP_UP_PP1, 0.0f);
+        SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP2, 0.0f);
+        SET_PWM_STEP_UP(PRG_STEP_UP_PP2, 0.0f);
     }
 }
 //----------------------- PWM END----------------------
