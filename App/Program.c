@@ -83,34 +83,54 @@ __STATIC_INLINE void __stepDebug()
 {
     static uint16_t cnt_led = 0;
 
-    if (((cnt_led++) % PRG_DEBUG_BLINK_PERIOD)==0)
+    if (((cnt_led++) % PRG_DEBUG_BLINK_PERIOD) == 0)
     {
         BSP_LED_TOGGLE(BSP_LED_RDY);
     }
 
-    bsp_dInOut_setDouts1_10(programStruct.control.remote.dout.w16);
+    if (programStruct.control.errorCode == error_noError)
+    {
+        bsp_dInOut_setDouts1_10(programStruct.control.remote.dout.w16);
 
-    Program_pwmOutsControl(bsp_pwm_outs_group_123, programStruct.control.remote.pwmEnable123);
-    Program_pwmOutsControl(bsp_pwm_outs_group_456, programStruct.control.remote.pwmEnable456);
+        Program_pwmOutsControl(bsp_pwm_outs_group_123, programStruct.control.remote.pwmEnable123);
+        Program_pwmOutsControl(bsp_pwm_outs_group_456, programStruct.control.remote.pwmEnable456);
 
-    SET_PWM_STEP_DOWN (0, programStruct.control.remote.pwmArray[0]);
-    SET_PWM_STEP_DOWN (1, programStruct.control.remote.pwmArray[1]);
+        SET_PWM_STEP_DOWN(0, programStruct.control.remote.pwmArray[0]);
+        SET_PWM_STEP_DOWN(1, programStruct.control.remote.pwmArray[1]);
 
-    SET_PWM_STEP_UP (3,programStruct.control.remote.pwmArray[3]);
-    SET_PWM_STEP_UP (4,programStruct.control.remote.pwmArray[4]);
+        SET_PWM_STEP_UP(3, programStruct.control.remote.pwmArray[3]);
+        SET_PWM_STEP_UP(4, programStruct.control.remote.pwmArray[4]);
+    }
+    else
+    {
+        programStruct.control.remote.dout.w16 = 0;
+        programStruct.control.remote.pwmEnable123 = 0;
+        programStruct.control.remote.pwmEnable456 = 0;
+        programStruct.control.remote.pwmArray[0] = 0;
+        programStruct.control.remote.pwmArray[1] = 0;
+        programStruct.control.remote.pwmArray[3] = 0;
+        programStruct.control.remote.pwmArray[4] = 0;
+        Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
+        Program_pwmOutsControl(bsp_pwm_outs_group_456, 0);
+        Program_resetDout(prg_dout1_KM1_KM2);
+        Program_resetDout(prg_dout2_KM3);
+        Program_resetDout(prg_dout3_KM4);
 
-//---------------- переключатель
+        SET_PWM_STEP_DOWN(0, 0);
+        SET_PWM_STEP_DOWN(1, 0);
+
+        SET_PWM_STEP_UP(3, 0);
+        SET_PWM_STEP_UP(4, 0);
+    }
+
     switch (programStruct.control.target)
     {
     case target_reset:
-        programStruct.control.step = step_reset; // ------->
+        programStruct.control.step = step_reset;
         break;
-    
     default:
         break;
     }
-//---------------- переключатель конец
-
 }
 __STATIC_INLINE void __stepReset()
 {
@@ -161,6 +181,7 @@ __STATIC_INLINE void __stepWaitOp()
     }
 }
 
+#define RADIATOR_HIGH_TEMP (80.0f)
 #define TIMER_WAIT_BAT_U  (100)
 #define TIMER_WAIT_ZPT_U  (100)
 #define TIMER_UP_FILTER_U (10000)
@@ -406,7 +427,11 @@ __STATIC_INLINE void __step_chargerWork()
     {
         Program_setError(error_Uzpt_high);  
     }
-
+    if ((bsp_analogIn_struct.currentTemp[0] > RADIATOR_HIGH_TEMP) || (bsp_analogIn_struct.currentTemp[1] > RADIATOR_HIGH_TEMP))
+    {
+        Program_setError(error_radiator_high_temp);  
+    }
+    //@do дописать защиту по ошибке драйверов
     // Switch
     switch (programStruct.control.target)
     {
@@ -619,7 +644,7 @@ __INLINE uint8_t Program_set_dout_debug(uint16_t douts)
     return 0;
 }
 
-#define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (300)
+#define PWM_REMOTE_MAX_PERCENT_STEP_UP_X10 (210)
 #define PWM_REMOTE_MAX_PERCENT_STEP_DOWN_X10 (1000)
 __INLINE uint8_t Program_set_pwm_debug(uint8_t channel_IDx, uint16_t pwm1000Perc)
 {
@@ -1096,7 +1121,7 @@ uint8_t Program_check_Iout2_high(uint16_t value)
     return 1;
 }
 
-#define PROGRAM_SETUP_UOUT_HIGH_MIN (650)
+#define PROGRAM_SETUP_UOUT_HIGH_MIN (400)
 #define PROGRAM_SETUP_UOUT_HIGH_MAX (730)
 uint8_t Program_check_Uout_high(uint16_t value)
 {
@@ -1165,7 +1190,8 @@ __INLINE uint8_t Program_StartStopCharger(uint8_t startStop)
     {
         if (programStruct.control.step == step_wait_op)
         {
-            Program_switchTarget(target_chargerWork);
+            // TODO: После проверки силовой части раскоментить!
+            // Program_switchTarget(target_chargerWork);
             return 1;
         }
     }

@@ -16,9 +16,11 @@ enum mdb_table_bsp
   tab_bsp_rezerv,                            // 1004
   tab_bsp_analog,                            // 1005 ... 1016
   tab_bsp_temp_1 = tab_bsp_analog + 11 + 1,  // 1017
-  tab_bsp_temp_2                             // 1018
+  tab_bsp_temp_2,                            // 1018
+  tab_bsp_temp_1_raw,                        // 1019
+  tab_bsp_temp_2_raw                         // 1020
 };
-#define MDB_BSP_BUF_COUNT (tab_bsp_temp_2 - MDB_TABLE_BSP_REG_NO + 1)
+#define MDB_BSP_BUF_COUNT (tab_bsp_temp_2_raw - MDB_TABLE_BSP_REG_NO + 1)
 uint16_t mdb_bsp_buf[MDB_BSP_BUF_COUNT];
 ModbusSS_table_t mdb_table_bsp = 
 {
@@ -243,10 +245,10 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
       ModbusSS_SetWord(&mdb_table_bsp, regNo++, bsp_analogIn_struct.rawDataUI[i]); // 1005 - 1016
     }
 
-    // ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_struct.currentTemp[0]);
-    // ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_struct.currentTemp[1]);
-    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_struct.rawDataTemp[0]);
-    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_struct.rawDataTemp[1]);
+    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1, bsp_analogIn_struct.currentTemp[0]);
+    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2, bsp_analogIn_struct.currentTemp[1]);
+    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_1_raw, bsp_analogIn_struct.rawDataTemp[0]);
+    ModbusSS_SetWord(&mdb_table_bsp, tab_bsp_temp_2_raw, bsp_analogIn_struct.rawDataTemp[1]);
     // BSP END-----------------------------//
   }
   else if (mdb_table_update == 1)

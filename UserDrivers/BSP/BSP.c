@@ -351,12 +351,30 @@ bsp_adc_struct adcStruct[BSP_ANALOG_IN_COUNT] = {
 bsp_analogIn_typedef bsp_analogIn_struct;
 __INLINE float bsp_analogIn_getTemp(uint8_t channel)
 {
-  const dsp_point_typedef tempPoints[] = {
-      {.x = 7749.0f,  .y = 90.0f},
-      {.x = 13180.0f, .y = 70.0f},
-      {.x = 17190.0f, .y = 60.0f},
-      {.x = 28770.0f, .y = 40.0f},
-      {.x = 60310.0f, .y = 0.1f },};
+  const dsp_point_typedef tempPoints[] = 
+  {
+    {.x = 6020.0f,  .y = 105.0f},
+    {.x = 6826.0f,  .y = 100.0f},
+    {.x = 7753.0f,  .y = 95.0f},
+    {.x = 8839.0f,  .y = 90.0f},
+    {.x = 10088.0f, .y = 85.0f},
+    {.x = 11530.0f, .y = 80.0f},
+    {.x = 13183.0f, .y = 75.0f},
+    {.x = 15061.0f, .y = 70.0f},
+    {.x = 17199.0f, .y = 65.0f},
+    {.x = 19667.0f, .y = 60.0f},
+    {.x = 22458.0f, .y = 55.0f},
+    {.x = 25475.0f, .y = 50.0f},
+    {.x = 28788.0f, .y = 45.0f},
+    {.x = 32366.0f, .y = 40.0f},
+    {.x = 36184.0f, .y = 35.0f},
+    {.x = 40215.0f, .y = 30.0f},
+    {.x = 44330.0f, .y = 25.0f},
+    {.x = 48522.0f, .y = 20.0f},
+    {.x = 52656.0f, .y = 15.0f},
+    {.x = 56615.0f, .y = 10.0f},
+    {.x = 60337.0f, .y = 5.1f}
+  };
 
   const uint8_t tempPointsCount = sizeof(tempPoints) / sizeof(tempPoints[0]);
 

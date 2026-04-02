@@ -48,7 +48,9 @@ typedef enum
     error_akb_no,
     error_akb_U_high,
     error_akb_fault_polarity,
-    error_UpFilterU_fail
+    error_UpFilterU_fail,
+    error_radiator_high_temp,
+    error_driver_VT_fault
 } Program_ERROR_typedef;
 
 typedef enum
