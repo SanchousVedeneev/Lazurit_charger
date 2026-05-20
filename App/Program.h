@@ -53,10 +53,13 @@ typedef enum
     error_driver_VT_fault
 } Program_ERROR_typedef;
 
+#define PRG_DIN_PUSK_VAL (1)
+#define PRG_DIN_STOP_VAL (0)
+
 typedef enum
 {
-	prg_din1_UNUSED,       // 0
-	prg_din2_UNUSED,       // 1
+	prg_din1_PUSK,         // 0
+	prg_din2_STOP,         // 1
 	prg_din3_UNUSED,       // 2
 	prg_din4_UNUSED,       // 3
 	prg_din5_UNUSED,       // 4
@@ -67,10 +70,16 @@ typedef enum
 	prg_din10_UNUSED       // 9
 } Program_din_typedef;
 
-#define PRG_DIN_PUSK_VAL (1)
-#define PRG_DIN_STOP_VAL (0)
-#define PRG_DIN_ALARM_STOP_VAL (0)
-#define PRG_DIN_KT_ON (0)
+typedef enum
+{
+	prg_driver1_fault,      // 0
+	prg_driver2_fault,      // 1
+	prg_driver3_fault,      // 2
+	prg_driver4_fault,      // 3
+	prg_driver5_fault,      // 4
+	prg_driver6_fault,      // 5
+} Program_driver_fault_typedef;
+
 
 typedef enum
 {
@@ -80,8 +89,8 @@ typedef enum
 	prg_dout4_fan_power,  // 3
 	prg_dout5_fan_cap,    // 4
 	prg_dout6_fan_L,      // 5
-	prg_dout7_UNUSED,     // 6
-	prg_dout8_UNUSED,     // 7
+	prg_dout7_HL_Work,    // 6
+	prg_dout8_HL_Fault,   // 7
 	prg_dout9_UNUSED,     // 8
 	prg_dout10_UNUSED     // 9
 } Program_dout_typedef;

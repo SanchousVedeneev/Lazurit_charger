@@ -12,6 +12,7 @@ __STATIC_INLINE void Program_regulatorInit();
 __STATIC_INLINE void Program_setDout(Program_dout_typedef dout);
 __STATIC_INLINE void Program_resetDout(Program_dout_typedef dout);
 __STATIC_INLINE uint8_t Program_checkDin(Program_din_typedef din);
+__STATIC_INLINE uint8_t Program_checkDriverFault(Program_din_typedef din);
 __STATIC_INLINE void Program_fastStop();
 __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error);
 
@@ -190,6 +191,12 @@ __STATIC_INLINE void __step_chargerWaitBatU()
 {
     static uint16_t timerWaitBatU = 0;
 
+    // Check button
+    if (Program_checkDin(prg_din2_STOP) == PRG_DIN_STOP_VAL)
+    {
+        Program_switchTarget(target_waitOp); 
+    }
+
     // Check error
     if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
     {
@@ -238,6 +245,12 @@ __STATIC_INLINE void __step_chargerWaitZptU()
 {
     static uint16_t timerWaitZptU = 0;
 
+    // Check button
+    if (Program_checkDin(prg_din2_STOP) == PRG_DIN_STOP_VAL)
+    {
+        Program_switchTarget(target_waitOp); 
+    }
+
     // Check error
     if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
     {
@@ -282,6 +295,7 @@ __STATIC_INLINE void __step_chargerUpFilterU()
 {
     static uint16_t timerUpFilterU = 0;
 
+    // Set/Reset dout
     if (timerUpFilterU == 0)
     {
         Program_setDout(prg_dout1_KM1_KM2);
@@ -291,6 +305,12 @@ __STATIC_INLINE void __step_chargerUpFilterU()
         programStruct.control.sau.chargerUpFilterU = 1;
         Program_pwmOutsControl(bsp_pwm_outs_group_123, 1);
         Program_pwmOutsControl(bsp_pwm_outs_group_456, 1);
+    }
+
+    // Check button
+    if (Program_checkDin(prg_din2_STOP) == PRG_DIN_STOP_VAL)
+    {
+        Program_switchTarget(target_waitOp); 
     }
 
     // Check error
@@ -318,13 +338,20 @@ __STATIC_INLINE void __step_chargerUpFilterU()
     {
         Program_setError(error_Uzpt_high);  
     }
+    // Во время отладки уйдет по ошибке драйвера, т.к. какой то драйвер постоянно выдает сигнал ошибки
+    if (Program_checkDriverFault(prg_driver1_fault) || Program_checkDriverFault(prg_driver2_fault) || \
+        Program_checkDriverFault(prg_driver3_fault) || Program_checkDriverFault(prg_driver4_fault))
+    {
+        Program_setError(error_driver_VT_fault);  
+    }
+
 
     // Check target and program timer
     if (programStruct.control.target == target_chargerWork)
     {
         if (timerUpFilterU++ < TIMER_UP_FILTER_U)
         {
-            if ((programStruct.analog.aIn[prg_analog_Uout].value - programStruct.analog.aIn[prg_analog_Uout_pp].value) < 10.0f) 
+            if ((programStruct.analog.aIn[prg_analog_Uout].value - programStruct.analog.aIn[prg_analog_Uout_pp].value) < 15.0f) 
             {
                 programStruct.control.sau.chargerUpFilterU = 0;
                 Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
@@ -360,10 +387,17 @@ __STATIC_INLINE void __step_chargerReady()
 {
     static uint16_t timerReady = 0;
 
+    // Set/Reset dout
     if (timerReady == 0)
     {
         Program_setDout(prg_dout2_KM3);
         Program_setDout(prg_dout3_KM4);
+    }
+
+    // Check button
+    if (Program_checkDin(prg_din2_STOP) == PRG_DIN_STOP_VAL)
+    {
+        Program_switchTarget(target_waitOp); 
     }
 
     // Check error
@@ -379,6 +413,13 @@ __STATIC_INLINE void __step_chargerReady()
     {
         Program_setError(error_Uzpt_high);  
     }
+    // TODO
+    // Во время отладки уйдет по ошибке драйвера, т.к. какой то драйвер постоянно выдает сигнал ошибки
+    if (Program_checkDriverFault(prg_driver1_fault) || Program_checkDriverFault(prg_driver2_fault) || \
+        Program_checkDriverFault(prg_driver3_fault) || Program_checkDriverFault(prg_driver4_fault))
+    {
+        Program_setError(error_driver_VT_fault);  
+    }
 
     // Check target and program timer
     if (programStruct.control.target == target_chargerWork)
@@ -392,6 +433,7 @@ __STATIC_INLINE void __step_chargerReady()
             programStruct.control.sau.chargerStart = 1;
             Program_pwmOutsControl(bsp_pwm_outs_group_123, 1);
             Program_pwmOutsControl(bsp_pwm_outs_group_456, 1);
+            Program_setDout(prg_dout7_HL_Work);
         }
     }
     timerReady = 0;
@@ -431,7 +473,13 @@ __STATIC_INLINE void __step_chargerWork()
     {
         Program_setError(error_radiator_high_temp);  
     }
-    //@do дописать защиту по ошибке драйверов
+    // Во время отладки уйдет по ошибке драйвера, т.к. какой то драйвер постоянно выдает сигнал ошибки
+    if (Program_checkDriverFault(prg_driver1_fault) || Program_checkDriverFault(prg_driver2_fault) || \
+        Program_checkDriverFault(prg_driver3_fault) || Program_checkDriverFault(prg_driver4_fault))
+    {
+        Program_setError(error_driver_VT_fault);  
+    }
+
     // Switch
     switch (programStruct.control.target)
     {
@@ -455,6 +503,8 @@ __STATIC_INLINE void __step_chargerStop()
     Program_resetDout(prg_dout1_KM1_KM2);
     Program_resetDout(prg_dout2_KM3);
     Program_resetDout(prg_dout3_KM4);
+    Program_resetDout(prg_dout7_HL_Work);
+    Program_setDout(prg_dout8_HL_Fault);
     // bsp_dInOut_setDouts1_10(0);
 
     // Switch
@@ -508,6 +558,10 @@ __STATIC_INLINE uint8_t Program_checkDin(Program_din_typedef din)
 {
     return bsp_dInOut_readDin(bsp_dInOut_in1 + din);
 }
+__STATIC_INLINE uint8_t Program_checkDriverFault(Program_din_typedef din)
+{
+    return bsp_dInOut_readDin(din);
+}
 __STATIC_INLINE void Program_fastStop()
 {
     /* снять все импульсы, выключить все контакторы*/
@@ -518,6 +572,8 @@ __STATIC_INLINE void Program_fastStop()
     Program_resetDout(prg_dout1_KM1_KM2);
     Program_resetDout(prg_dout2_KM3);
     Program_resetDout(prg_dout3_KM4);
+    Program_resetDout(prg_dout7_HL_Work);
+    Program_setDout(prg_dout8_HL_Fault);
     // bsp_dInOut_setDouts1_10(0);
 }
 
@@ -719,7 +775,7 @@ uint8_t Program_set_PWM(uint16_t value)
 #define PROGRAM_SETUP_REGU_IN_MAX (690)
 uint8_t Program_setup_RegU_in(uint16_t value)
 {
-    if (programStruct.control.step != step_debug)
+    if (programStruct.control.step != step_wait_op)
     {
         return 0;
     }
@@ -782,7 +838,7 @@ uint8_t Program_setup_RegU_k_P(float value)
 #define PROGRAM_SETUP_REGU_OUTMAX_MAX (250)
 uint8_t Program_setup_RegU_OutMax(uint16_t value)
 {
-    if (programStruct.control.step != step_debug)
+    if (programStruct.control.step != step_wait_op)
     {
         return 0;
     }
@@ -1192,6 +1248,7 @@ __INLINE uint8_t Program_StartStopCharger(uint8_t startStop)
         {
             // TODO: После проверки силовой части раскоментить!
             // Program_switchTarget(target_chargerWork);
+            asm("Nop");
             return 1;
         }
     }
@@ -1235,6 +1292,7 @@ __STATIC_INLINE uint8_t Program_setError(Program_ERROR_typedef error)
         return 0;
     }
     programStruct.control.errorCode = error;
+    Program_fastStop(); // Добавил, раньше не было
     Program_switchTarget(target_error);
     return 1;
 }
@@ -1280,6 +1338,13 @@ void bsp_sys_tick_1k_callback()
             }
         }
         timer_fan = 0;
+    }
+
+    if ((Program_checkDin(prg_din1_PUSK) == PRG_DIN_PUSK_VAL) && (programStruct.control.step == step_wait_op))
+    {
+        // TODO: После проверки силовой части раскоментить!
+        // Program_switchTarget(target_chargerWork); 
+        asm("Nop");
     }
 
     // // Формируем и сбрасываем ошибку связи Modbus с панелью (возможно стоит переделать)
@@ -1514,6 +1579,7 @@ void bsp_pwm_123_callback()
     {
         reg = &programStruct.control.sau.RegU;
         dsp_regulatorReset(reg);
+        dsp_intensSetterReset(&programStruct.control.sau.ZI_Iout);
 
         for (uint8_t i = 0; i < 3; i++)
         {
@@ -1549,6 +1615,8 @@ void bsp_pwm_123_callback()
     reg = &programStruct.control.sau.RegU;
     reg->In = programStruct.setupParam.RegU_in;
     reg->Fb = programStruct.analog.aIn[prg_analog_Uout_pp].value;
+    reg->IntMax = programStruct.setupParam.RegU_OutMax;
+    reg->OutMax = programStruct.setupParam.RegU_OutMax;
     dsp_regulatorProcess(reg);
     i_charge = reg->Out;
     //-------------- Регулятор напряжения Конец ------------//
@@ -1562,6 +1630,7 @@ void bsp_pwm_123_callback()
 
     //----------------- Задатчик интенсивности тока ---------------//
     programStruct.control.sau.ZI_Iout.in = reg->Out;
+    // programStruct.control.sau.ZI_Iout.in = 20;  // Для отладки
     dsp_intensSetterUpProcess(&programStruct.control.sau.ZI_Iout);
     i_L = programStruct.control.sau.ZI_Iout.out/2;
     //----------------- Задатчик интенсивности тока Конец ---------------//

@@ -48,8 +48,20 @@ enum mdb_table_program
   tab_prg_analogVal_Iout1,                  // 1211
   tab_prg_analogVal_Iout2,                  // 1212
   tab_prg_pwm1_6,                           // 1213 ... 1218
+  tab_prg_step_ = tab_prg_pwm1_6+6,         // 1219
+  tab_prg_error,                            // 1220
+  tab_prg_dout,                             // 1221
+  tab_prg_Uzpt,                             // 1222
+  tab_prg_Uout,                             // 1223
+  tab_prg_Iout1,                            // 1224
+  tab_prg_Iout2,                            // 1225
+  tab_prg_Iout,                             // 1226
+  tab_prg_Temp1,                            // 1227
+  tab_prg_Temp2,                            // 1228
+  tab_prg_IL3,                              // 1229
+  tab_prg_IL4                               // 1230
 };
-#define MDB_PROGRAM_BUF_COUNT ((tab_prg_pwm1_6 + 5) - MDB_TABLE_PROGRAM_REG_NO + 1)
+#define MDB_PROGRAM_BUF_COUNT (tab_prg_IL4 - MDB_TABLE_PROGRAM_REG_NO + 1)
 uint16_t mdb_program_buf[MDB_PROGRAM_BUF_COUNT];
 ModbusSS_table_t mdb_table_program = 
 {
@@ -273,6 +285,20 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
     {
       ModbusSS_SetWord(&mdb_table_program, tab_prg_pwm1_6 + i, programStruct.control.remote.pwmArray[i]);
     }
+
+    // Для панели
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_step_, programStruct.control.step);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_error, programStruct.control.errorCode);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_dout,  bsp_dInOut_struct.out.w16[2]);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Uzpt,  (int16_t)Program_analogGetByIdx(prg_analog_Uzpt)->value);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Uout,  (int16_t)Program_analogGetByIdx(prg_analog_Uout_pp)->value);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Iout1, (int16_t)Program_analogGetByIdx(prg_analog_Iout1)->value);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Iout2, (int16_t)Program_analogGetByIdx(prg_analog_Iout2)->value);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Iout,  (int16_t)(Program_analogGetByIdx(prg_analog_Iout1)->value + Program_analogGetByIdx(prg_analog_Iout2)->value));     
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Temp1, (int16_t)bsp_analogIn_struct.currentTemp[0]);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_Temp2, (int16_t)bsp_analogIn_struct.currentTemp[1]);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_IL3,   (int16_t)Program_analogGetByIdx(prg_analog_IL3)->value);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_IL4,   (int16_t)Program_analogGetByIdx(prg_analog_IL4)->value);
   }
   else if (mdb_table_update == 2)
   {
