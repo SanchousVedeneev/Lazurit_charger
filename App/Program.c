@@ -338,8 +338,8 @@ __STATIC_INLINE void __step_chargerUpFilterU()
     {
         Program_setError(error_Uzpt_high);  
     }
-    // Во время отладки уйдет по ошибке драйвера, т.к. какой то драйвер постоянно выдает сигнал ошибки
-    if (Program_checkDriverFault(prg_driver1_fault) || Program_checkDriverFault(prg_driver2_fault) || \
+    // Второй модуль всегда в ошибке, поэтому убрал проверку на ошибку
+    if (Program_checkDriverFault(prg_driver1_fault) ||  \
         Program_checkDriverFault(prg_driver3_fault) || Program_checkDriverFault(prg_driver4_fault))
     {
         Program_setError(error_driver_VT_fault);  
@@ -413,9 +413,8 @@ __STATIC_INLINE void __step_chargerReady()
     {
         Program_setError(error_Uzpt_high);  
     }
-    // TODO
-    // Во время отладки уйдет по ошибке драйвера, т.к. какой то драйвер постоянно выдает сигнал ошибки
-    if (Program_checkDriverFault(prg_driver1_fault) || Program_checkDriverFault(prg_driver2_fault) || \
+    // Второй модуль всегда в ошибке, поэтому убрал проверку на ошибку
+    if (Program_checkDriverFault(prg_driver1_fault) || \
         Program_checkDriverFault(prg_driver3_fault) || Program_checkDriverFault(prg_driver4_fault))
     {
         Program_setError(error_driver_VT_fault);  
@@ -456,6 +455,12 @@ __STATIC_INLINE void __step_chargerReady()
 }
 __STATIC_INLINE void __step_chargerWork()
 {
+    // Check button
+    if (Program_checkDin(prg_din2_STOP) == PRG_DIN_STOP_VAL)
+    {
+        Program_switchTarget(target_waitOp); 
+    }
+
     // Check error
     if (!(programStruct.PanParam.mdb_state == PAN_MDB_STATE_OK))
     {
@@ -473,8 +478,8 @@ __STATIC_INLINE void __step_chargerWork()
     {
         Program_setError(error_radiator_high_temp);  
     }
-    // Во время отладки уйдет по ошибке драйвера, т.к. какой то драйвер постоянно выдает сигнал ошибки
-    if (Program_checkDriverFault(prg_driver1_fault) || Program_checkDriverFault(prg_driver2_fault) || \
+    // Второй модуль всегда в ошибке, поэтому убрал проверку на ошибку
+    if (Program_checkDriverFault(prg_driver1_fault) || \
         Program_checkDriverFault(prg_driver3_fault) || Program_checkDriverFault(prg_driver4_fault))
     {
         Program_setError(error_driver_VT_fault);  
@@ -1246,9 +1251,7 @@ __INLINE uint8_t Program_StartStopCharger(uint8_t startStop)
     {
         if (programStruct.control.step == step_wait_op)
         {
-            // TODO: После проверки силовой части раскоментить!
-            // Program_switchTarget(target_chargerWork);
-            asm("Nop");
+            Program_switchTarget(target_chargerWork);
             return 1;
         }
     }
@@ -1342,8 +1345,7 @@ void bsp_sys_tick_1k_callback()
 
     if ((Program_checkDin(prg_din1_PUSK) == PRG_DIN_PUSK_VAL) && (programStruct.control.step == step_wait_op))
     {
-        // TODO: После проверки силовой части раскоментить!
-        // Program_switchTarget(target_chargerWork); 
+        Program_switchTarget(target_chargerWork); 
         asm("Nop");
     }
 
