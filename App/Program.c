@@ -184,7 +184,7 @@ __STATIC_INLINE void __stepWaitOp()
 
 #define RADIATOR_HIGH_TEMP (80.0f)
 #define TIMER_WAIT_BAT_U  (100)
-#define TIMER_WAIT_ZPT_U  (100)
+#define TIMER_WAIT_ZPT_U  (1000)
 #define TIMER_UP_FILTER_U (10000)
 #define TIMER_READY       (500)
 __STATIC_INLINE void __step_chargerWaitBatU()
@@ -509,7 +509,6 @@ __STATIC_INLINE void __step_chargerStop()
     Program_resetDout(prg_dout2_KM3);
     Program_resetDout(prg_dout3_KM4);
     Program_resetDout(prg_dout7_HL_Work);
-    Program_setDout(prg_dout8_HL_Fault);
     // bsp_dInOut_setDouts1_10(0);
 
     // Switch
@@ -1307,8 +1306,13 @@ __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 //------------  ФУНКЦИИ КОНЕЦ ------------//
 
 //------------   Задача 1 кГц   ------------//
-#define PRG_TEMP_ON_FAN  (50)
-#define PRG_TEMP_OFF_FAN (40)
+#define PRG_TEMP_ON_FAN_POWER  (42)
+#define PRG_TEMP_OFF_FAN_POWER (37)
+#define PRG_TEMP_ON_FAN_L  (38)
+#define PRG_TEMP_OFF_FAN_L (35)
+#define PRG_TEMP_ON_FAN_CAP  (47)
+#define PRG_TEMP_OFF_FAN_CAP (42)
+
 #define PRG_TIMER_FAN_POWER (4000)
 #define PRG_UPDATE_MDB (100)
 void bsp_sys_tick_1k_callback()
@@ -1327,17 +1331,34 @@ void bsp_sys_tick_1k_callback()
     {
         if (programStruct.control.step != step_debug)
         {
-            if ((bsp_analogIn_struct.currentTemp[0] > PRG_TEMP_ON_FAN) || (bsp_analogIn_struct.currentTemp[1] > PRG_TEMP_ON_FAN))
+            // Вентилятор силовой блок
+            if ((bsp_analogIn_struct.currentTemp[0] > PRG_TEMP_ON_FAN_POWER) || (bsp_analogIn_struct.currentTemp[1] > PRG_TEMP_ON_FAN_POWER))
             {
                 Program_setDout(prg_dout4_fan_power);
-                Program_setDout(prg_dout5_fan_cap);
-                Program_setDout(prg_dout6_fan_L);
             }
-            else if ((bsp_analogIn_struct.currentTemp[0] < PRG_TEMP_OFF_FAN) && (bsp_analogIn_struct.currentTemp[1] < PRG_TEMP_OFF_FAN))
+            else if ((bsp_analogIn_struct.currentTemp[0] < PRG_TEMP_OFF_FAN_POWER) && (bsp_analogIn_struct.currentTemp[1] < PRG_TEMP_OFF_FAN_POWER))
             {
                 Program_resetDout(prg_dout4_fan_power);
-                Program_resetDout(prg_dout5_fan_cap);
+            }
+
+            // Вентилятор дросселей
+            if ((bsp_analogIn_struct.currentTemp[0] > PRG_TEMP_ON_FAN_L) || (bsp_analogIn_struct.currentTemp[1] > PRG_TEMP_ON_FAN_L))
+            {
+                Program_setDout(prg_dout6_fan_L);
+            }
+            else if ((bsp_analogIn_struct.currentTemp[0] < PRG_TEMP_OFF_FAN_L) && (bsp_analogIn_struct.currentTemp[1] < PRG_TEMP_OFF_FAN_L))
+            {
                 Program_resetDout(prg_dout6_fan_L);
+            }
+
+            // Вентилятор крышка шкафа
+            if ((bsp_analogIn_struct.currentTemp[0] > PRG_TEMP_ON_FAN_CAP) || (bsp_analogIn_struct.currentTemp[1] > PRG_TEMP_ON_FAN_CAP))
+            {
+                Program_setDout(prg_dout5_fan_cap);
+            }
+            else if ((bsp_analogIn_struct.currentTemp[0] < PRG_TEMP_OFF_FAN_CAP) && (bsp_analogIn_struct.currentTemp[1] < PRG_TEMP_OFF_FAN_CAP))
+            {
+                Program_resetDout(prg_dout5_fan_cap);
             }
         }
         timer_fan = 0;
@@ -1543,12 +1564,14 @@ uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOf
     return 1;
 }
 
+#define POWER_MAX (80000.0f)
 void bsp_pwm_123_callback()
 {
     static dsp_regulator_typedef* reg = NULL;
     static float UpFilterU_intens_setter_PWM = 0.0f;
     static float i_charge = 0.0f;
     static float i_L = 0.0f;
+    static float i_lim_power = 0.0f;
 
     // error
     if (programStruct.analog.aIn[prg_analog_Uout_pp].value > programStruct.setupParam.check_Uout_high)
@@ -1598,13 +1621,13 @@ void bsp_pwm_123_callback()
         }
         else
         {
-            if (UpFilterU_intens_setter_PWM < 1040.0f)
+            if (UpFilterU_intens_setter_PWM < 500.0f)
             {
                 UpFilterU_intens_setter_PWM += 0.05f;
             }
-            if (UpFilterU_intens_setter_PWM >= 1040.0f)
+            if (UpFilterU_intens_setter_PWM >= 500.0f)
             {
-                UpFilterU_intens_setter_PWM = 1040.0f;
+                UpFilterU_intens_setter_PWM = 500.0f;
             }
             set_pwm_charger(UpFilterU_intens_setter_PWM, 1);
         }
@@ -1612,20 +1635,40 @@ void bsp_pwm_123_callback()
         return;
     }
 
+    // Расчет ограничения тока по мощности
+    if (programStruct.analog.aIn[prg_analog_Uout_pp].value > 20.0f)
+    {
+        i_lim_power = POWER_MAX / programStruct.analog.aIn[prg_analog_Uout_pp].value;
+    }
+    else
+    {
+      i_lim_power =   programStruct.setupParam.RegU_OutMax;
+    }
+    
     // Вариант в работу
     //----------------- Регулятор напряжения ---------------//
     reg = &programStruct.control.sau.RegU;
     reg->In = programStruct.setupParam.RegU_in;
     reg->Fb = programStruct.analog.aIn[prg_analog_Uout_pp].value;
-    reg->IntMax = programStruct.setupParam.RegU_OutMax;
-    reg->OutMax = programStruct.setupParam.RegU_OutMax;
+    if (programStruct.setupParam.RegU_OutMax < i_lim_power)
+    {
+        reg->IntMax = programStruct.setupParam.RegU_OutMax;
+        reg->OutMax = programStruct.setupParam.RegU_OutMax;
+    }
+    else
+    {
+        reg->IntMax = i_lim_power;
+        reg->OutMax = i_lim_power; 
+    }
+
     dsp_regulatorProcess(reg);
     i_charge = reg->Out;
     //-------------- Регулятор напряжения Конец ------------//
 
     //----------------- Регулятор выходного тока ---------------//
-    reg = &programStruct.control.sau.RegI[Iout];
+    reg = &programStruct.control.sau.RegI[Iout]; 
     reg->In = i_charge;
+    // reg->In = 20.0f; // Для отладки
     reg->Fb = (programStruct.analog.aIn[prg_analog_Iout1].value + programStruct.analog.aIn[prg_analog_Iout2].value);
     dsp_regulatorProcess(reg);
     //-------------- Регулятор выходного тока Конец ------------//
@@ -1642,7 +1685,13 @@ void bsp_pwm_123_callback()
     reg->In = i_L;
     reg->Fb = programStruct.analog.aIn[prg_analog_IL3].value;
     dsp_regulatorProcess(reg);
+    
+    if (reg->Out < 1.0f)
+    {
+        reg->Out = 0.0f;
+    }
     set_pwm_charger(reg->Out, 1);
+    // set_pwm_charger(0.0f, 1); // для отладки 
     //-------------- Регулятор тока дросселя L3 (канал 1) Конец ------------//
 
     //----------------- Регулятор тока дросселя L4 (канал 2) ---------------//
@@ -1650,7 +1699,13 @@ void bsp_pwm_123_callback()
     reg->In = i_L;
     reg->Fb = programStruct.analog.aIn[prg_analog_IL4].value;
     dsp_regulatorProcess(reg);
+    
+    if (reg->Out < 1.0f)
+    {
+        reg->Out = 0.0f;
+    }
     set_pwm_charger(reg->Out, 2);
+    // set_pwm_charger(0.0f, 2); // для отладки 
     //-------------- Регулятор тока дросселя L4 (канал 2) Конец ------------//
 }
 
@@ -1667,10 +1722,10 @@ __STATIC_INLINE void set_pwm_charger(float inPwm, uint8_t channel)
             SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP1, inPwm);
             SET_PWM_STEP_UP(PRG_STEP_UP_PP1, 0.0f);
         }
-        else if ((inPwm >= 1000.0f) && (inPwm < 2000.0f))
+        else if ((inPwm >= 1000.0f) && (inPwm < 1500.0f))
         {
             SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP1, 1000.0f);
-            SET_PWM_STEP_UP(PRG_STEP_UP_PP1, inPwm - 1000.0f);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP1, (inPwm - 1000.0f));
         }
         else
         {
@@ -1685,10 +1740,10 @@ __STATIC_INLINE void set_pwm_charger(float inPwm, uint8_t channel)
             SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP2, inPwm);
             SET_PWM_STEP_UP(PRG_STEP_UP_PP2, 0.0f);
         }
-        else if ((inPwm >= 1000.0f) && (inPwm < 2000.0f))
+        else if ((inPwm >= 1000.0f) && (inPwm < 1500.0f))
         {
             SET_PWM_STEP_DOWN(PRG_STEP_DOWN_PP2, 1000.0f);
-            SET_PWM_STEP_UP(PRG_STEP_UP_PP2, inPwm - 1000.0f);
+            SET_PWM_STEP_UP(PRG_STEP_UP_PP2, (inPwm - 1000.0f));
         }
         else
         {
