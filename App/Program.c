@@ -182,11 +182,13 @@ __STATIC_INLINE void __stepWaitOp()
     }
 }
 
-#define RADIATOR_HIGH_TEMP (80.0f)
+#define RADIATOR_HIGH_TEMP (85.0f)
 #define TIMER_WAIT_BAT_U  (100)
 #define TIMER_WAIT_ZPT_U  (1000)
-#define TIMER_UP_FILTER_U (10000)
+#define TIMER_UP_FILTER_U (20000)
 #define TIMER_READY       (500)
+#define U_AKB_REVERSE     (-30.0f)
+
 __STATIC_INLINE void __step_chargerWaitBatU()
 {
     static uint16_t timerWaitBatU = 0;
@@ -300,7 +302,7 @@ __STATIC_INLINE void __step_chargerUpFilterU()
     {
         Program_setDout(prg_dout1_KM1_KM2);
     }
-    else if (timerUpFilterU == 1000)
+    else if (timerUpFilterU == 200)
     {
         programStruct.control.sau.chargerUpFilterU = 1;
         Program_pwmOutsControl(bsp_pwm_outs_group_123, 1);
@@ -318,7 +320,7 @@ __STATIC_INLINE void __step_chargerUpFilterU()
     {
         Program_setError(error_link_panel);
     }
-    if (programStruct.analog.aIn[prg_analog_Uout].value < (-30.0f))
+    if (programStruct.analog.aIn[prg_analog_Uout].value < U_AKB_REVERSE)
     {
         Program_setError(error_akb_fault_polarity);
     }
@@ -351,7 +353,7 @@ __STATIC_INLINE void __step_chargerUpFilterU()
     {
         if (timerUpFilterU++ < TIMER_UP_FILTER_U)
         {
-            if ((programStruct.analog.aIn[prg_analog_Uout].value - programStruct.analog.aIn[prg_analog_Uout_pp].value) < 15.0f) 
+            if ((programStruct.analog.aIn[prg_analog_Uout].value - programStruct.analog.aIn[prg_analog_Uout_pp].value) < 15.0f)
             {
                 programStruct.control.sau.chargerUpFilterU = 0;
                 Program_pwmOutsControl(bsp_pwm_outs_group_123, 0);
@@ -591,59 +593,59 @@ void Program_ParamSetToDefault()
         programStruct.setupParam.analog_filter_N[i] = 200; // 1 - Фильтр отключен
     }
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 0.001f;               
+    programStruct.setupParam.analog_kMul[prg_analog_Uzpt]  = 0.03793f;               
     programStruct.setupParam.analog_shift[prg_analog_Uzpt] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uout_pp]  = 0.001f;    
+    programStruct.setupParam.analog_kMul[prg_analog_Uout_pp]  = 0.03802f;    
     programStruct.setupParam.analog_shift[prg_analog_Uout_pp] = 1930.0f;   
 
-    programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 0.001f;                
+    programStruct.setupParam.analog_kMul[prg_analog_Uout]  = 0.03802f;                
     programStruct.setupParam.analog_shift[prg_analog_Uout] = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_IL3]   = 0.001f;                
+    programStruct.setupParam.analog_kMul[prg_analog_IL3]   = -0.01365f;                
     programStruct.setupParam.analog_shift[prg_analog_IL3]  = 1930.0f;               
 
-    programStruct.setupParam.analog_kMul[prg_analog_IL4]   = 0.001f;               
+    programStruct.setupParam.analog_kMul[prg_analog_IL4]   = -0.01367f;               
     programStruct.setupParam.analog_shift[prg_analog_IL4]  = 1930.0f;              
 
-    programStruct.setupParam.analog_kMul[prg_analog_Iout1]  = 0.001f;              
+    programStruct.setupParam.analog_kMul[prg_analog_Iout1]  = -0.01363f;              
     programStruct.setupParam.analog_shift[prg_analog_Iout1] = 1930.0f;                    
 
-    programStruct.setupParam.analog_kMul[prg_analog_Iout2]  = 0.001f;                
+    programStruct.setupParam.analog_kMul[prg_analog_Iout2]  = -0.01363f;                
     programStruct.setupParam.analog_shift[prg_analog_Iout2] = 1930.0f;              
 
     // Настройка регуляторов (вписать после наладки преобразователя)
-    programStruct.setupParam.RegU_in     = 450.0f;
-    programStruct.setupParam.RegU_k_Int  = 0.001f;
-    programStruct.setupParam.RegU_k_P    = 0.001f;
-    programStruct.setupParam.RegU_OutMax = 20.0f;
+    programStruct.setupParam.RegU_in     = 500.0f;
+    programStruct.setupParam.RegU_k_Int  = 0.025f;
+    programStruct.setupParam.RegU_k_P    = 0.002f;
+    programStruct.setupParam.RegU_OutMax = 50.0f;
 
-    programStruct.setupParam.RegI_Iout_k_Int  = 0.001f;
-    programStruct.setupParam.RegI_Iout_k_P    = 0.001f;
-    programStruct.setupParam.RegI_Iout_OutMax = 20.0f;
+    programStruct.setupParam.RegI_Iout_k_Int  = 1.400f;
+    programStruct.setupParam.RegI_Iout_k_P    = 0.140f;
+    programStruct.setupParam.RegI_Iout_OutMax = 200.0f;
 
-    programStruct.setupParam.RegI_IL3_k_Int   = 0.001f;
-    programStruct.setupParam.RegI_IL3_k_P     = 0.001f;
-    programStruct.setupParam.RegI_IL3_OutMax  = 1.0f;
+    programStruct.setupParam.RegI_IL3_k_Int   = 20.000f;
+    programStruct.setupParam.RegI_IL3_k_P     = 1.8f;
+    programStruct.setupParam.RegI_IL3_OutMax  = 1220.0f;
 
-    programStruct.setupParam.RegI_IL4_k_Int   = 0.001f;
-    programStruct.setupParam.RegI_IL4_k_P     = 0.001f;
-    programStruct.setupParam.RegI_IL4_OutMax  = 1.0f;
+    programStruct.setupParam.RegI_IL4_k_Int   = 20.000f;
+    programStruct.setupParam.RegI_IL4_k_P     = 1.8f;
+    programStruct.setupParam.RegI_IL4_OutMax  = 1220.0f;
 
-    programStruct.setupParam.ZI_Iout_settings = 5.0f;
+    programStruct.setupParam.ZI_Iout_settings = 10.0f;
 
     // Настройки зарядника
     programStruct.setupParam.f_PWM = 4000;
 
     // Настройки проверок на ошибки
-    programStruct.setupParam.check_Uzpt_low   = 470.0f;
+    programStruct.setupParam.check_Uzpt_low   = 460.0f;
     programStruct.setupParam.check_Uzpt_high  = 630.0f;
-    programStruct.setupParam.check_IL3_high   = 140.0f;
-    programStruct.setupParam.check_IL4_high   = 140.0f;
-    programStruct.setupParam.check_Iout1_high = 140.0f;
-    programStruct.setupParam.check_Iout2_high = 140.0f;
+    programStruct.setupParam.check_IL3_high   = 110.0f;
+    programStruct.setupParam.check_IL4_high   = 110.0f;
+    programStruct.setupParam.check_Iout1_high = 110.0f;
+    programStruct.setupParam.check_Iout2_high = 110.0f;
     programStruct.setupParam.check_Uout_high  = 720.0f;
-    programStruct.setupParam.check_Uakb_no    = 300.0f;
+    programStruct.setupParam.check_Uakb_no    = 250.0f;
     programStruct.setupParam.check_Uakb_high  = 690.0f;
 }
 
@@ -775,7 +777,7 @@ uint8_t Program_set_PWM(uint16_t value)
     return 1;
 }
 
-#define PROGRAM_SETUP_REGU_IN_MIN (100) // для отладки (после отладки повысить до 420)
+#define PROGRAM_SETUP_REGU_IN_MIN (380) 
 #define PROGRAM_SETUP_REGU_IN_MAX (690)
 uint8_t Program_setup_RegU_in(uint16_t value)
 {
@@ -923,7 +925,7 @@ uint8_t Program_setup_RegI_Iout_OutMax(uint16_t value)
 }
 
 #define PROGRAM_SETUP_REGI_IL_K_INT_MIN (0.001f)
-#define PROGRAM_SETUP_REGI_IL_K_INT_MAX (20.0f)
+#define PROGRAM_SETUP_REGI_IL_K_INT_MAX (32.0f)
 uint8_t Program_setup_RegI_IL3_k_Int(float value)
 {
     if (programStruct.control.step != step_debug)
@@ -944,7 +946,7 @@ uint8_t Program_setup_RegI_IL3_k_Int(float value)
 }
 
 #define PROGRAM_SETUP_REGI_IL_K_P_MIN (0.001f)
-#define PROGRAM_SETUP_REGI_IL_K_P_MAX (2.0f)
+#define PROGRAM_SETUP_REGI_IL_K_P_MAX (3.0f)
 uint8_t Program_setup_RegI_IL3_k_P(float value)
 {
     if (programStruct.control.step != step_debug)
@@ -1041,7 +1043,7 @@ uint8_t Program_setup_RegI_IL4_OutMax(uint16_t value)
 }
 
 #define PROGRAM_SETUP_ZI_I_OUT_MIN (2)
-#define PROGRAM_SETUP_ZI_I_OUT_MAX (40)
+#define PROGRAM_SETUP_ZI_I_OUT_MAX (20)
 uint8_t Program_setup_ZI_Iout_settings(uint16_t value)
 {
     if (programStruct.control.step != step_debug)
@@ -1061,7 +1063,7 @@ uint8_t Program_setup_ZI_Iout_settings(uint16_t value)
     return 1;
 }
 
-#define PROGRAM_SETUP_UZPT_LOW_MIN (440)
+#define PROGRAM_SETUP_UZPT_LOW_MIN (460)
 #define PROGRAM_SETUP_UZPT_LOW_MAX (520)
 uint8_t Program_check_Uzpt_low(uint16_t value)
 {
@@ -1082,7 +1084,7 @@ uint8_t Program_check_Uzpt_low(uint16_t value)
     return 1;
 }
 
-#define PROGRAM_SETUP_UZPT_HIGH_MIN (570)
+#define PROGRAM_SETUP_UZPT_HIGH_MIN (580)
 #define PROGRAM_SETUP_UZPT_HIGH_MAX (650)
 uint8_t Program_check_Uzpt_high(uint16_t value)
 {
@@ -1104,7 +1106,7 @@ uint8_t Program_check_Uzpt_high(uint16_t value)
 }
 
 #define PROGRAM_SETUP_IL_HIGH_MIN (50)
-#define PROGRAM_SETUP_IL_HIGH_MAX (145)
+#define PROGRAM_SETUP_IL_HIGH_MAX (125)
 uint8_t Program_check_IL3_high(uint16_t value)
 {
     if (programStruct.control.step != step_debug)
@@ -1143,7 +1145,7 @@ uint8_t Program_check_IL4_high(uint16_t value)
 }
 
 #define PROGRAM_SETUP_IOUT12_HIGH_MIN (50)
-#define PROGRAM_SETUP_IOUT12_HIGH_MAX (145)
+#define PROGRAM_SETUP_IOUT12_HIGH_MAX (125)
 uint8_t Program_check_Iout1_high(uint16_t value)
 {
     if (programStruct.control.step != step_debug)
@@ -1182,7 +1184,7 @@ uint8_t Program_check_Iout2_high(uint16_t value)
 }
 
 #define PROGRAM_SETUP_UOUT_HIGH_MIN (400)
-#define PROGRAM_SETUP_UOUT_HIGH_MAX (730)
+#define PROGRAM_SETUP_UOUT_HIGH_MAX (720)
 uint8_t Program_check_Uout_high(uint16_t value)
 {
     if (programStruct.control.step != step_debug)
@@ -1315,9 +1317,11 @@ __INLINE void Program_switchTarget(Program_TARGET_typedef newTarget)
 
 #define PRG_TIMER_FAN_POWER (4000)
 #define PRG_UPDATE_MDB (100)
+#define PRG_TIMER_MDB_FAULTH (30)
+
 void bsp_sys_tick_1k_callback()
 {
-    // static uint16_t count_1k_mdb = 0;
+    static uint16_t count_1k_mdb = 0;
     static uint16_t timer_mdb = 0;
     static uint16_t timer_fan = 0;
 
@@ -1325,6 +1329,25 @@ void bsp_sys_tick_1k_callback()
     {
         protocolMbRtuSlaveCtrl_update_tables();
         timer_mdb = 0;
+
+        // // Формируем и сбрасываем ошибку связи Modbus с панелью (возможно стоит переделать)
+        if (programStruct.PanParam.mdb_rx == PAN_MDB_STATE_ERR)
+        {
+            if (count_1k_mdb >= PRG_TIMER_MDB_FAULTH)
+            {
+                programStruct.PanParam.mdb_state = PAN_MDB_STATE_ERR;
+            }
+            else
+            {
+                count_1k_mdb++;
+            }
+        }
+        else if (programStruct.PanParam.mdb_rx == PAN_MDB_STATE_OK)
+        {
+            programStruct.PanParam.mdb_state = PAN_MDB_STATE_OK;
+            count_1k_mdb = 0;
+        }
+        programStruct.PanParam.mdb_rx = PAN_MDB_STATE_ERR;
     }
 
     if (++timer_fan > PRG_TIMER_FAN_POWER)
@@ -1369,21 +1392,6 @@ void bsp_sys_tick_1k_callback()
         Program_switchTarget(target_chargerWork); 
         asm("Nop");
     }
-
-    // // Формируем и сбрасываем ошибку связи Modbus с панелью (возможно стоит переделать)
-    // if(programStruct.PanParam.mdb_rx == PAN_MDB_STATE_ERR)
-    // {
-    //     if(count_1k_mdb >= (programStruct.setupParam.timeout_mdb_pan*1000))
-    //         programStruct.PanParam.mdb_state = PAN_MDB_STATE_ERR;
-    //     else
-    //         count_1k_mdb++;
-    // }
-    // else if(programStruct.PanParam.mdb_rx == PAN_MDB_STATE_OK)
-    // {
-    //     programStruct.PanParam.mdb_state = PAN_MDB_STATE_OK;
-    //     count_1k_mdb = 0;
-    // }
-    // programStruct.PanParam.mdb_rx = PAN_MDB_STATE_ERR;
 
     asm("NOP");
     switch (programStruct.control.step)
@@ -1564,7 +1572,7 @@ uint8_t Program_set_pwmOuts_debug(bsp_pwm_outs_group_typedef group, uint8_t onOf
     return 1;
 }
 
-#define POWER_MAX (80000.0f)
+#define POWER_MAX (100000.0f)
 void bsp_pwm_123_callback()
 {
     static dsp_regulator_typedef* reg = NULL;
@@ -1621,13 +1629,17 @@ void bsp_pwm_123_callback()
         }
         else
         {
-            if (UpFilterU_intens_setter_PWM < 500.0f)
+            if (UpFilterU_intens_setter_PWM < 1050.0f)
             {
-                UpFilterU_intens_setter_PWM += 0.05f;
+                UpFilterU_intens_setter_PWM += 0.03f;
             }
-            if (UpFilterU_intens_setter_PWM >= 500.0f)
+            if (UpFilterU_intens_setter_PWM >= 1050.0f)
             {
-                UpFilterU_intens_setter_PWM = 500.0f;
+                UpFilterU_intens_setter_PWM = 1050.0f;
+            }
+            if(UpFilterU_intens_setter_PWM < 1.0f)
+            {
+                UpFilterU_intens_setter_PWM = 1.0f;
             }
             set_pwm_charger(UpFilterU_intens_setter_PWM, 1);
         }
@@ -1668,14 +1680,12 @@ void bsp_pwm_123_callback()
     //----------------- Регулятор выходного тока ---------------//
     reg = &programStruct.control.sau.RegI[Iout]; 
     reg->In = i_charge;
-    // reg->In = 20.0f; // Для отладки
     reg->Fb = (programStruct.analog.aIn[prg_analog_Iout1].value + programStruct.analog.aIn[prg_analog_Iout2].value);
     dsp_regulatorProcess(reg);
     //-------------- Регулятор выходного тока Конец ------------//
 
     //----------------- Задатчик интенсивности тока ---------------//
     programStruct.control.sau.ZI_Iout.in = reg->Out;
-    // programStruct.control.sau.ZI_Iout.in = 20;  // Для отладки
     dsp_intensSetterUpProcess(&programStruct.control.sau.ZI_Iout);
     i_L = programStruct.control.sau.ZI_Iout.out/2;
     //----------------- Задатчик интенсивности тока Конец ---------------//
@@ -1691,7 +1701,6 @@ void bsp_pwm_123_callback()
         reg->Out = 0.0f;
     }
     set_pwm_charger(reg->Out, 1);
-    // set_pwm_charger(0.0f, 1); // для отладки 
     //-------------- Регулятор тока дросселя L3 (канал 1) Конец ------------//
 
     //----------------- Регулятор тока дросселя L4 (канал 2) ---------------//
@@ -1705,7 +1714,6 @@ void bsp_pwm_123_callback()
         reg->Out = 0.0f;
     }
     set_pwm_charger(reg->Out, 2);
-    // set_pwm_charger(0.0f, 2); // для отладки 
     //-------------- Регулятор тока дросселя L4 (канал 2) Конец ------------//
 }
 

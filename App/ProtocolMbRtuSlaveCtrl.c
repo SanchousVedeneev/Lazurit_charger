@@ -59,9 +59,11 @@ enum mdb_table_program
   tab_prg_Temp1,                            // 1227
   tab_prg_Temp2,                            // 1228
   tab_prg_IL3,                              // 1229
-  tab_prg_IL4                               // 1230
+  tab_prg_IL4,                              // 1230
+  tab_prg_regUin,                           // 1231
+  tab_prg_regUout_max,                      // 1231
 };
-#define MDB_PROGRAM_BUF_COUNT (tab_prg_IL4 - MDB_TABLE_PROGRAM_REG_NO + 1)
+#define MDB_PROGRAM_BUF_COUNT (tab_prg_regUout_max - MDB_TABLE_PROGRAM_REG_NO + 1)
 uint16_t mdb_program_buf[MDB_PROGRAM_BUF_COUNT];
 ModbusSS_table_t mdb_table_program = 
 {
@@ -299,6 +301,10 @@ __INLINE void protocolMbRtuSlaveCtrl_update_tables()
     ModbusSS_SetWord(&mdb_table_program, tab_prg_Temp2, (int16_t)bsp_analogIn_struct.currentTemp[1]);
     ModbusSS_SetWord(&mdb_table_program, tab_prg_IL3,   (int16_t)Program_analogGetByIdx(prg_analog_IL3)->value);
     ModbusSS_SetWord(&mdb_table_program, tab_prg_IL4,   (int16_t)Program_analogGetByIdx(prg_analog_IL4)->value);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_regUin,(int16_t)programStruct.setupParam.RegU_in);
+    ModbusSS_SetWord(&mdb_table_program, tab_prg_regUout_max,   (int16_t)programStruct.setupParam.RegU_OutMax);
+
+
   }
   else if (mdb_table_update == 2)
   {
@@ -525,6 +531,13 @@ __weak void protocolMbRtuSlaveCtrl_callback_H_WRITE(ModbusSS_table_t *table, uin
       {
         response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_OK;
       }
+      break;
+    case tab_bsp_rezerv:
+      if (ModbusSS_GetWord(&mdb_table_bsp, reg) == 1)
+      {
+        programStruct.PanParam.mdb_rx = PAN_MDB_STATE_OK;
+      }
+      
       break;
     default:
       response = PROTOCOL_MB_RTU_SLAVE_CTRL_CMD_FAIL;
